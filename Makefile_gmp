@@ -1,0 +1,184 @@
+
+CXX      = g++
+
+####### Change when done debugging.
+CXXFLAGS = -pipe -O3 -w  -DGMP_BIGNUM
+#CXXFLAGS = -pipe -g -O0 -w -DGMP_BIGNUM
+
+
+INCPATH  =  -I. -Isrc/shared -I/usr/include 
+LINK     = g++
+LFLAGS   = 
+LIBS     = $(SUBLIBS) -L/usr/lib/ -lgmpxx -lgmp 
+TAR      = tar -cf
+GZIP     = gzip -9f
+COPY     = cp -f
+COPY_FILE= $(COPY)
+COPY_DIR = $(COPY) -r
+INSTALL_FILE= $(COPY_FILE)
+INSTALL_DIR = $(COPY_DIR)
+DEL_FILE = rm -f
+SYMLINK  = ln -sf
+DEL_DIR  = rmdir
+MOVE     = mv -f
+CHK_DIR_EXISTS= test -d
+MKDIR    = mkdir -p
+
+####### Output directory
+
+OBJECTS_DIR = ./
+
+####### Files
+
+HEADERS = src/src_sharpSAT/Basics.h \
+		src/shared/SomeTime.h \
+		src/shared/RealNumberTypes.h \
+		src/shared/Interface/AnalyzerData.h \
+		src/src_sharpSAT/MainSolver/DecisionStack.h \
+		src/src_sharpSAT/MainSolver/DecisionTree.h \
+		src/src_sharpSAT/MainSolver/MainSolver.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/ComponentTypes.h \
+		src/src_sharpSAT/MainSolver/FormulaCache.h
+SOURCES = src/src_sharpSAT/Basics.cpp \
+		src/shared/SomeTime.cpp \
+		src/shared/RealNumberTypes.cpp \
+		src/shared/Interface/AnalyzerData.cpp \
+		src/src_sharpSAT/MainSolver/DecisionStack.cpp \
+		src/src_sharpSAT/MainSolver/DecisionTree.cpp \
+		src/src_sharpSAT/MainSolver/MainSolver.cpp \
+		src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.cpp \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.cpp \
+		src/src_sharpSAT/main.cpp \
+		src/src_sharpSAT/MainSolver/FormulaCache.cpp
+OBJECTS = Basics.o \
+		SomeTime.o \
+		RealNumberTypes.o \
+		AnalyzerData.o \
+		DecisionStack.o \
+		DecisionTree.o \
+		MainSolver.o \
+		InstanceGraph.o \
+		AtomsAndNodes.o \
+		main.o \
+		FormulaCache.o
+TARGET   = sharpSAT
+
+DDNNF_TARGET = dsharp
+BDG_TARGET = dsharp-bdg
+
+DDNNF = src/src_sharpSAT/Basics.h.ddnnf
+BDG = src/src_sharpSAT/Basics.h.bdg
+BASIC = src/src_sharpSAT/Basics.h
+
+first: all
+####### Implicit rules
+
+.SUFFIXES: .c .o .cpp .cc .cxx .C
+
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+
+.cc.o:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+
+.cxx.o:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+
+.C.o:
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o $@ $<
+
+.c.o:
+	$(CC) -c $(CFLAGS) $(INCPATH) -o $@ $<
+
+####### Build rules
+
+all: Makefile $(TARGET)
+
+$(TARGET):  $(OBJECTS) 
+	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
+
+clean:
+	-$(DEL_FILE) $(OBJECTS)
+	-$(DEL_FILE) *~ core *.core
+
+####### Build modes
+
+ddnnf:
+	$(COPY) $(DDNNF) $(BASIC)
+	make all
+	$(MOVE) $(TARGET) $(DDNNF_TARGET)
+
+bdg:
+	$(COPY) $(BDG) $(BASIC)
+	make all
+	$(MOVE) $(TARGET) $(BDG_TARGET)
+
+####### Sub-libraries
+
+distclean: clean
+	-$(DEL_FILE) $(TARGET) $(TARGET)
+
+
+FORCE:
+
+####### Compile
+
+Basics.o: src/src_sharpSAT/Basics.cpp src/src_sharpSAT/Basics.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Basics.o src/src_sharpSAT/Basics.cpp
+
+SomeTime.o: src/shared/SomeTime.cpp src/shared/SomeTime.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o SomeTime.o src/shared/SomeTime.cpp
+
+RealNumberTypes.o: src/shared/RealNumberTypes.cpp src/shared/RealNumberTypes.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o RealNumberTypes.o src/shared/RealNumberTypes.cpp
+
+AnalyzerData.o: src/shared/Interface/AnalyzerData.cpp src/shared/Interface/AnalyzerData.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AnalyzerData.o src/shared/Interface/AnalyzerData.cpp
+
+DecisionStack.o: src/src_sharpSAT/MainSolver/DecisionStack.cpp src/src_sharpSAT/MainSolver/DecisionStack.h \
+		src/src_sharpSAT/Basics.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/ComponentTypes.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DecisionStack.o src/src_sharpSAT/MainSolver/DecisionStack.cpp
+
+MainSolver.o: src/src_sharpSAT/MainSolver/MainSolver.cpp src/src_sharpSAT/MainSolver/MainSolver.h \
+		src/src_sharpSAT/Basics.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.h \
+		src/src_sharpSAT/MainSolver/FormulaCache.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/ComponentTypes.h \
+		src/src_sharpSAT/MainSolver/DecisionStack.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o MainSolver.o src/src_sharpSAT/MainSolver/MainSolver.cpp
+
+InstanceGraph.o: src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.cpp src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.h \
+		src/src_sharpSAT/Basics.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o InstanceGraph.o src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.cpp
+
+AtomsAndNodes.o: src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.cpp src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h \
+		src/src_sharpSAT/Basics.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o AtomsAndNodes.o src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.cpp
+
+main.o: src/src_sharpSAT/main.cpp src/src_sharpSAT/MainSolver/MainSolver.h \
+		src/src_sharpSAT/Basics.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.h \
+		src/src_sharpSAT/MainSolver/FormulaCache.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/ComponentTypes.h \
+		src/src_sharpSAT/MainSolver/DecisionStack.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o src/src_sharpSAT/main.cpp
+
+FormulaCache.o: src/src_sharpSAT/MainSolver/FormulaCache.cpp src/src_sharpSAT/MainSolver/FormulaCache.h \
+		src/src_sharpSAT/Basics.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/ComponentTypes.h \
+		src/src_sharpSAT/MainSolver/DecisionStack.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/AtomsAndNodes.h \
+		src/src_sharpSAT/MainSolver/InstanceGraph/InstanceGraph.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o FormulaCache.o src/src_sharpSAT/MainSolver/FormulaCache.cpp
+
+DecisionTree.o: src/src_sharpSAT/MainSolver/DecisionTree.cpp src/src_sharpSAT/MainSolver/DecisionTree.h \
+		src/src_sharpSAT/Basics.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o DecisionTree.o src/src_sharpSAT/MainSolver/DecisionTree.cpp
