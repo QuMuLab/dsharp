@@ -124,8 +124,12 @@ void CMainSolver::solve(const char *lpstrFileName)
 		for (bbit = backbones.begin(); bbit != backbones.end(); bbit++)
 		{
 			//toSTDOUT("Adding backbone lit: " << bbit->toSignedInt() << endl);
-			decStack.top().getCurrentDTNode()->addChild(get_lit_node(
-					bbit->toSignedInt()));
+
+			// Check to make sure that the node hasn't been altered
+			if (bbit->toSignedInt() == get_lit_node(bbit->toSignedInt())->getVal())
+				decStack.top().getCurrentDTNode()->addChild(get_lit_node(bbit->toSignedInt()));
+			else
+				decStack.top().getCurrentDTNode()->addChild(new DTNode(bbit->toSignedInt(), true, num_Nodes++));
 		}
 	}
 
