@@ -64,9 +64,9 @@ class CMainSolver: public CInstanceGraph
 	DTNode * get_lit_node(int lit)
 	{
 		if (lit < 0)
-			return litNodes[lit * -2];
+			return litNodes[lit * -2 + 1];
 		else
-			return litNodes[lit * 2 + 1];
+			return litNodes[lit * 2];
 	}
 	////-----------////
 
