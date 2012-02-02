@@ -1,7 +1,6 @@
 sharpSAT version 1.1
 
 To compile this version of sharpSAT simply run
-
 make
 
 Note that this only works, if you have gmp installed. sharpSAT uses GMP to store the model counting results with infinite precision.
