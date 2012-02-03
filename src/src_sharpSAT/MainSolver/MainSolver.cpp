@@ -64,8 +64,13 @@ void CMainSolver::solve(const char *lpstrFileName)
 	// Create the initial LIT nodes for quick caching
 	for (int i = 0; i <= originalVarCount; ++i)
 	{
-		litNodes.push_back(new DTNode(i, true, num_Nodes++));
-		litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
+		//Original:
+                //litNodes.push_back(new DTNode(i, true, num_Nodes++));
+		//litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
+
+                //Dimitar Shterionov: changed places/order
+                litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
+                litNodes.push_back(new DTNode(i, true, num_Nodes++));
 	}
 
 	toSTDOUT("#Vars:" << countAllVars() << endl);
@@ -123,8 +128,6 @@ void CMainSolver::solve(const char *lpstrFileName)
 		vector<LiteralIdT>::iterator bbit;
 		for (bbit = backbones.begin(); bbit != backbones.end(); bbit++)
 		{
-			//toSTDOUT("Adding backbone lit: " << bbit->toSignedInt() << endl);
-
 			// Check to make sure that the node hasn't been altered
 			if (bbit->toSignedInt() == get_lit_node(bbit->toSignedInt())->getVal())
 				decStack.top().getCurrentDTNode()->addChild(get_lit_node(bbit->toSignedInt()));
