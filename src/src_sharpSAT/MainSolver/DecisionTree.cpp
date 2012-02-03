@@ -545,13 +545,14 @@ void DTNode::translateLiterals(const vector<int> varTranslation)
 	// If this is a literal, translate it
 	if (DT_LIT == type)
 	{
+            //Dimitar Shterionov: reversing the value of val -> if (val > 0) then ...
 		if (val < 0)
 		{
-			val = -1 * varTranslation[-1 * val];
+			val = -1 * varTranslation[-1 * val]; //Dimitar Shterionov - original: -1 * varTranslation[-1 * val];
 		}
 		else
 		{
-			val = varTranslation[val];
+			val = varTranslation[val]; //Dimitar Shterionov - original: varTranslation[val];
 		}
 	}
 
@@ -679,12 +680,38 @@ void DTNode::prepNNF(vector<DTNode*> * nodeList)
 	nodeList->push_back(this);
 }
 
+//Dimitar Sht. Shterionov:
+//geting all the nodes: similar as prepNNF, but without assigning nnfID to the node
+void DTNode::getAllNodes(vector<DTNode*> * nodeList)
+{
+	if (nnfID != -1)
+		return;
+
+	if ((DT_TOP == type) || (DT_BOTTOM == type))
+	{
+		toSTDOUT("Error: type of DTNode is either top or bottom.");
+		return;
+	}
+
+	if (DT_LIT != type)
+	{
+		set<DTNode *>::iterator it;
+		for (it = children.begin(); it != children.end(); it++)
+		{
+			(*it)->getAllNodes(nodeList);
+		}
+	}
+
+	// Add / id this DT node
+	nodeList->push_back(this);
+}
+
 // Output the nnf format
 void DTNode::genNNF(ostream & out)
 {
-	if (DT_LIT == type)
-		out << "L " << val << endl;
-	else if (DT_TOP == type)
+	if (DT_LIT == type) 
+                out << "L " << val << endl;
+        else if (DT_TOP == type)
 		out << "A 0" << endl;
 	else if (DT_BOTTOM == type)
 		out << "O 0 0" << endl;
@@ -700,7 +727,11 @@ void DTNode::genNNF(ostream & out)
 	}
 	else if (DT_OR == type)
 	{
-		out << "O " << choiceVar << " " << children.size();
+            //Dimitar Sht. Shterionov: ignoring negative values on OR nodes
+                if (choiceVar > 0)
+                    out << "O " << choiceVar << " " << children.size();
+                else
+                    out << "O 0 " << children.size();
 
 		if (2 != children.size())
 			toSTDOUT("Error: Or node with " << children.size() << " children.");
@@ -711,6 +742,177 @@ void DTNode::genNNF(ostream & out)
 
 		out << endl;
 	}
+}
+
+set<int> DTNode::litNums()
+{//Dimitar Shterionov:
+    set<int> litsSeen;
+
+    if (DT_LIT == type)
+        litsSeen.insert(this->getVal());
+    else
+    {
+	set<DTNode *>::iterator it;
+        set<int> childrenSeen;
+        set<int> childrensLits;
+	
+	// We recurs looking only for literals
+	for (it = children.begin(); it != children.end(); it++)
+	{
+		if (DT_LIT == (*it)->getType())
+		{
+			int lit_num = (*it)->getVal();
+			if (litsSeen.find(lit_num) == litsSeen.end())
+				litsSeen.insert(lit_num);
+		}
+		else
+		{
+			int node_id = (*it)->getID();
+			if (childrenSeen.find(node_id) == childrenSeen.end())
+			{
+				childrenSeen.insert(node_id);
+				childrensLits = (*it)->litNums();
+			}
+		}
+                litsSeen.insert(childrensLits.begin(), childrensLits.end());
+	}
+    }
+    return litsSeen;
+}
+
+set<int> DTNode::getDifferenceLits(set<int> litNumsBottom, set<int> litNumsTop)
+{//Dimitar Shterionov
+    set<int> temp;
+    set<int>::iterator it;
+    
+    for (it = litNumsTop.begin(); it != litNumsTop.end(); it++)
+        if ((litNumsBottom.find(*it) == litNumsBottom.end()) && (litNumsBottom.find((-1) * (*it)) == litNumsBottom.end()))
+            temp.insert(abs(*it));
+    return temp;
+}
+
+void DTNode::smoothNode(vector<DTNode*> * nodeList)
+{//Dimitar Shterionov
+	if ((DT_TOP == type) || (DT_BOTTOM == type))
+	{
+		toSTDOUT("Error: type of DTNode is either top or bottom.");
+		return;
+	}
+
+	if (DT_LIT != type)
+	{
+  		set<DTNode *>::iterator it;
+                set<int> literalChildren = litNums();
+		for (it = children.begin(); it != children.end(); it++)
+		{
+                    (*it)->smoothNode(nodeList);
+
+                    if (type == DT_OR)
+                    {
+                        set<int> childsLiteralChildren = (*it)->litNums();
+                        set<int> diffLitNums = getDifferenceLits(childsLiteralChildren, literalChildren);
+                        if (!diffLitNums.empty())
+                        {
+                            if ((*it)->getType() == DT_LIT)
+                                transformLeafToSmoothed(*it, diffLitNums, nodeList);
+                            else if ((*it)->getType() == DT_OR)
+                                transformOrToSmoothed2(*it, diffLitNums, nodeList);
+                            else if ((*it)->getType() == DT_AND)
+                                (*it)->transformAndToSmoothed(diffLitNums, nodeList);
+                        }
+                    }
+		}
+	}
+        else
+        {
+            return;
+        }
+}
+
+void DTNode::transformOrToSmoothed(set<int> AdditionalLiterals, vector<DTNode*> * nodeList)
+{//Dimitar Shterionov
+    set<DTNode *>::iterator it;
+    set<int>::iterator lit_it;
+    set<DTNode *> temp = children;
+
+    for (it = temp.begin(); it != temp.end(); it++)
+    {
+        DTNode* ChildNode = new DTNode(DT_AND, (CSolverConf::nodeCount+1));
+        for (lit_it = AdditionalLiterals.begin(); lit_it != AdditionalLiterals.end(); lit_it++)
+        {
+            DTNode* tempChildNode = new DTNode(DT_OR, (CSolverConf::nodeCount+1));
+            tempChildNode->addChild(getLiteralFromNodeList(int(*lit_it), nodeList), true);
+            tempChildNode->addChild(getLiteralFromNodeList(((-1) * int(*lit_it)), nodeList), true);
+            nodeList->push_back(tempChildNode);
+            ChildNode->addChild(tempChildNode, true);
+        }
+        ChildNode->addChild((*it), true);
+        nodeList->push_back(ChildNode);
+        this->addChild(ChildNode, true);
+    }
+    //remove the processed children
+    for (it = temp.begin(); it != temp.end(); it++)
+        this->childDeleted((*it));
+}
+void DTNode::transformAndToSmoothed(set<int> AdditionalLiterals, vector<DTNode*> * nodeList)
+{//Dimitar Shterionov
+    set<DTNode *>::iterator it;
+    set<int>::iterator lit_it;
+
+    for (lit_it = AdditionalLiterals.begin(); lit_it != AdditionalLiterals.end(); lit_it++)
+    {
+        DTNode* additionalChildNode = new DTNode(DT_OR, (CSolverConf::nodeCount+1));
+        additionalChildNode->addChild(getLiteralFromNodeList(int(*lit_it), nodeList), true);
+        additionalChildNode->addChild(getLiteralFromNodeList(((-1) * int(*lit_it)), nodeList), true);
+        nodeList->push_back(additionalChildNode);
+        this->addChild(additionalChildNode, true);
+    }
+}
+void DTNode::transformLeafToSmoothed(DTNode * leafNode, set<int> AdditionalLiterals, vector<DTNode*> * nodeList)
+{
+    DTNode* SubstituteNode = new DTNode(DT_AND, (CSolverConf::nodeCount+1));
+    
+    for (set<int>::iterator lit_it = AdditionalLiterals.begin(); lit_it != AdditionalLiterals.end(); lit_it++)
+    {
+        DTNode* tempChildNode = new DTNode(DT_OR, (CSolverConf::nodeCount+1));
+        tempChildNode->addChild(getLiteralFromNodeList(int(*lit_it), nodeList), true);
+        tempChildNode->addChild(getLiteralFromNodeList(((-1) * int(*lit_it)), nodeList), true);
+        nodeList->push_back(tempChildNode);
+        SubstituteNode->addChild(tempChildNode, true);
+    }
+    SubstituteNode->addChild(leafNode, true);
+    nodeList->push_back(SubstituteNode);
+    this->childDeleted(leafNode);
+    this->addChild(SubstituteNode, true);
+}
+void DTNode::transformOrToSmoothed2(DTNode * orNode, set<int> AdditionalLiterals, vector<DTNode*> * nodeList)
+{
+    DTNode* SubstituteNode = new DTNode(DT_AND, (CSolverConf::nodeCount+1));
+
+    for (set<int>::iterator lit_it = AdditionalLiterals.begin(); lit_it != AdditionalLiterals.end(); lit_it++)
+    {
+        DTNode* tempChildNode = new DTNode(DT_OR, (CSolverConf::nodeCount+1));
+        tempChildNode->addChild(getLiteralFromNodeList(int(*lit_it), nodeList), true);
+        tempChildNode->addChild(getLiteralFromNodeList(((-1) * int(*lit_it)), nodeList), true);
+        nodeList->push_back(tempChildNode);
+        SubstituteNode->addChild(tempChildNode, true);
+    }
+    SubstituteNode->addChild(orNode, true);
+    nodeList->push_back(SubstituteNode);
+    this->childDeleted(orNode);//?should I remove it from the nodeList or not?
+    this->addChild(SubstituteNode, true);
+}
+DTNode * DTNode::getLiteralFromNodeList(int literal, vector<DTNode*> * nodeList)
+{
+    for (int i = 0; i < nodeList->size(); i++)
+        if(nodeList->at(i)->getVal() == literal)
+            return nodeList->at(i);
+    
+    DTNode* newChildNode = new DTNode(literal, true, (CSolverConf::nodeCount+1));
+
+    // Add / id of new node DT node
+    nodeList->push_back(newChildNode);
+    return newChildNode;
 }
 
 bool DTNode::checkCycle(int sourceID, bool first)

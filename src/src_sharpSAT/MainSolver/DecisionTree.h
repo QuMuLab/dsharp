@@ -24,6 +24,7 @@
 
 #include <set>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 
 #include <SomeTime.h>
@@ -129,9 +130,11 @@ public:
 	bool childDeleted(DTNode * oldChild);
 	int numChildren();
 	bool hasChild(DTNode * child);
-
+        
 	void compressNode();
 	int count(bool isRoot);
+        set<int> litNums();
+        set<int> getDifferenceLits(set<int> childsLiteralChildren, set<int> literalChildren);
 	void uncheck(int unID);
 
 	void reset();
@@ -146,6 +149,15 @@ public:
 
 	// Sanity checks
 	bool checkCycle(int sourceID, bool first = true);
+
+        //Dimitar Shterionov: smoothing
+        DTNode * getLiteralFromNodeList(int literal, vector<DTNode*> * nodeList);
+        void getAllNodes(vector<DTNode*> * nodeList);
+        void smoothNode(vector<DTNode*> * nodeList);
+        void transformOrToSmoothed(set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
+        void transformAndToSmoothed(set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
+        void transformLeafToSmoothed(DTNode * leafNode, set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
+        void transformOrToSmoothed2(DTNode * orNode, set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
 };
 
 #endif
