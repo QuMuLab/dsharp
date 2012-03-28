@@ -65,12 +65,8 @@ void CMainSolver::solve(const char *lpstrFileName)
 	for (int i = 0; i <= originalVarCount; ++i)
 	{
 		//Original:
-                //litNodes.push_back(new DTNode(i, true, num_Nodes++));
-		//litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
-
-                //Dimitar Shterionov: changed places/order
-                litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
-                litNodes.push_back(new DTNode(i, true, num_Nodes++));
+		litNodes.push_back(new DTNode(i, true, num_Nodes++));
+		litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
 	}
 
 	toSTDOUT("#Vars:" << countAllVars() << endl);
@@ -119,7 +115,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 	// There may have been some translation done during the preprocessing
 	//  phase, so we translate the bdg literals back.
 	decStack.top().getDTNode()->uncheck(1);
-	decStack.top().getDTNode()->translateLiterals(getVarTranslation());
+	translateLiterals(getVarTranslation());
 
 	// We also need to add all of the backbones found in preprocessing, but
 	//  we only do this if there are solutions.
@@ -130,16 +126,15 @@ void CMainSolver::solve(const char *lpstrFileName)
 		{
 			// Check to make sure that the node hasn't been altered
 			if (bbit->toSignedInt() == get_lit_node(bbit->toSignedInt())->getVal())
-				decStack.top().getCurrentDTNode()->addChild(get_lit_node(bbit->toSignedInt()));
+				decStack.top().getCurrentDTNode()->addChild(get_lit_node(bbit->toSignedInt()), true);
 			else
-				decStack.top().getCurrentDTNode()->addChild(new DTNode(bbit->toSignedInt(), true, num_Nodes++));
+				decStack.top().getCurrentDTNode()->addChild(get_lit_node_full(bbit->toSignedInt()), true);
 		}
 	}
 
 	// We compress the tree now that the search is finished
 	decStack.top().getDTNode()->uncheck(2);
-	cout << "Uncompressed Edges: " << decStack.top().getDTNode()->count(true)
-			<< endl;
+	cout << "Uncompressed Edges: " << decStack.top().getDTNode()->count(true) << endl;
 
 	decStack.top().getDTNode()->uncheck(3);
 	decStack.top().getDTNode()->compressNode();
@@ -147,11 +142,71 @@ void CMainSolver::solve(const char *lpstrFileName)
 	decStack.top().getDTNode()->uncheck(4);
 	bdg_edge_count = decStack.top().getDTNode()->count(true);
 	cout << "Compressed Edges: " << bdg_edge_count << endl;
-
+	
 	// There may have been some translation done during the file parsing
 	//  phase, so we translate the bdg literals back.
 	decStack.top().getDTNode()->uncheck(5);
-	decStack.top().getDTNode()->translateLiterals(getOrigTranslation());
+	translateLiterals(getOrigTranslation());
+	
+	if (CSolverConf::smoothNNF) {
+		// Smooth the d-DNNF (note: this may cause AND-AND parent-children)
+		set<int> literals;
+		decStack.top().getDTNode()->uncheck(6);
+		decStack.top().getDTNode()->smooth(num_Nodes, *this, literals);
+		
+		// See if we've got every literal in the d-DNNF
+		if (2 * originalVarCount == literals.size())
+			return;
+		
+		// TODO: Fix an AND node to the top
+		if (DT_AND != decStack.top().getDTNode()->getType())
+			toSTDOUT("Error: The top node wasn't an AND node.");
+		
+		// Make sure that every literal appears some place
+		DTNode* botNode = new DTNode(DT_AND, num_Nodes++);
+		botNode->botIfy();
+		for (int i = 1; i <= originalVarCount; ++i) {
+		
+			// Check if neither exist
+			if ((literals.find(i) == literals.end()) &&
+				(literals.find(-1 * i) == literals.end())) {
+					
+				// Add an arbitrary choice between the two
+				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
+				decStack.top().getDTNode()->addChild(newOr, true);
+				newOr->addChild(new DTNode(i, true, num_Nodes++), true);
+				newOr->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
+				
+			} else if (literals.find(i) == literals.end()) {
+				
+				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
+				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
+				
+				get_lit_node_full(-1 * i)->sub_parents(newOr);
+				
+				newOr->addChild(get_lit_node_full(-1 * i), true);
+				newOr->addChild(newAnd, true);
+				
+				newAnd->addChild(new DTNode(i, true, num_Nodes++), true);
+				newAnd->addChild(botNode, true);
+				
+			} else if (literals.find(-1 * i) == literals.end()) {
+				
+				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
+				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
+				
+				get_lit_node_full(i)->sub_parents(newOr);
+				
+				newOr->addChild(get_lit_node_full(i), true);
+				newOr->addChild(newAnd, true);
+				
+				newAnd->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
+				newAnd->addChild(botNode, true);
+				
+			}
+		}
+	}
+
 }
 
 SOLVER_StateT CMainSolver::countSAT()

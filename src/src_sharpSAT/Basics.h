@@ -28,6 +28,8 @@ public:
     static unsigned int maxCacheSize;   // maximum Cache Size in bytes
     
     static int nodeCount; // Nodes currently in use
+    
+    static bool smoothNNF;
 
     CSolverConf();
 
