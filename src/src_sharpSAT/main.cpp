@@ -136,9 +136,9 @@ int main(int argc, char *argv[])
 		if (strcmp(argv[i], "-noIBCP") == 0)
 			CSolverConf::allowImplicitBCP = false;
 
-                //Dimitar Shterionov:
-                if (strcmp(argv[i], "-smoothNNF") == 0)
-                        smoothNNF = true;
+		//Dimitar Shterionov:
+		if (strcmp(argv[i], "-smoothNNF") == 0)
+			CSolverConf::smoothNNF = true;
               
 		if (strcmp(argv[i], "-noPP") == 0)
 			CSolverConf::allowPreProcessing = false;
@@ -220,10 +220,6 @@ int main(int argc, char *argv[])
 	finalcSATEvaluation();
 	if (fileout)
 		theRunAn.getData().writeToFile(dataFile);
-
-        //Dimitar Shterionov: Smoothing
-        if (smoothNNF)
-            theSolver.smoothNNF();
 
 	if (graphFileout)
 		theSolver.writeBDG(graphFile);

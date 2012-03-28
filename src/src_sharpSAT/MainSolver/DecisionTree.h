@@ -32,13 +32,17 @@
 #include "InstanceGraph/ComponentTypes.h"
 
 #include "../Basics.h"
+
 using namespace std;
+
+class CMainSolver;
 
 class DTNode
 {
 	DT_NodeType type;
 	set<DTNode *> children;
 	set<DTNode *> parents;
+	set<int> variables;
 
 	int val;
 	int id;
@@ -108,17 +112,25 @@ public:
 	set<DTNode *>::iterator getChildrenBegin();
 	set<DTNode *>::iterator getChildrenEnd();
 
+	set<int>::iterator getVariablesBegin();
+	set<int>::iterator getVariablesEnd();
+	int numVariables();
+	bool hasVariable(int var);
+
 	DTNode * onlyChild();
 
 	DT_NodeType getType();
 	int getID();
 	int getVal();
+	
+	void setVal(int v) {val = v;}
 
 	bool isBottom();
 	bool isTop();
 	bool isValid();
 
 	void topIfy();
+	void botIfy();
 
 	// Parent methods
 	void addParent(DTNode * newParent, bool link = false);
@@ -133,13 +145,10 @@ public:
         
 	void compressNode();
 	int count(bool isRoot);
-        set<int> litNums();
-        set<int> getDifferenceLits(set<int> childsLiteralChildren, set<int> literalChildren);
 	void uncheck(int unID);
 
 	void reset();
 	bool validate();
-	void translateLiterals(const vector<int> varTranslation);
 
 	void prepNNF(vector<DTNode*> * nodeList);
 	void genNNF(ostream & out);
@@ -150,14 +159,9 @@ public:
 	// Sanity checks
 	bool checkCycle(int sourceID, bool first = true);
 
-        //Dimitar Shterionov: smoothing
-        DTNode * getLiteralFromNodeList(int literal, vector<DTNode*> * nodeList);
-        void getAllNodes(vector<DTNode*> * nodeList);
-        void smoothNode(vector<DTNode*> * nodeList);
-        void transformOrToSmoothed(set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
-        void transformAndToSmoothed(set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
-        void transformLeafToSmoothed(DTNode * leafNode, set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
-        void transformOrToSmoothed2(DTNode * orNode, set<int> AdditionalLiterals, vector<DTNode*> * nodeList);
+	// Smoothing
+	void smooth(int &num_nodes, CMainSolver &solver, set<int> &literals);
+	void sub_parents(DTNode *newChild);
 };
 
 #endif

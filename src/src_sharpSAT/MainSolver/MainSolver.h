@@ -60,14 +60,6 @@ class CMainSolver: public CInstanceGraph
 	bool enable_DT_recording;
 	vector<DTNode *> litNodes;
 	vector<pair<DTNode *, DTNode *> > dirtyLitNodes;
-
-	DTNode * get_lit_node(int lit)
-	{
-                if (lit < 0)
-                	return litNodes[lit * -2];            
-		else
-                	return litNodes[lit * 2 + 1];                
-	}
 	////-----------////
 
 	vector<LiteralIdT> backbones;
@@ -141,7 +133,7 @@ private:
 	vector<LiteralIdT> theQueue;
 	vector<LiteralIdT> ca_1UIPClause;
 	vector<LiteralIdT> ca_lastUIPClause;
-        
+
 	int imaxDecLev;
 
 	// includes the causes of a variable assignment via
@@ -238,6 +230,25 @@ private:
 	bool printUnitClauses();
 
 public:
+
+	DTNode * get_lit_node(int lit)
+	{
+		if (lit < 0)
+			return litNodes[lit * -2 + 1];
+		else
+			return litNodes[lit * 2];
+	}
+	
+	DTNode * get_lit_node_full(int lit)
+	{
+		for (int i = 0; i < litNodes.size(); i++) {
+			if (lit == litNodes[i]->getVal()) {
+				return litNodes[i];
+			}
+		}
+		litNodes.push_back(new DTNode(lit, true, num_Nodes++));
+		return litNodes[litNodes.size() - 1];
+	}
 
 	// Variable to determine the mode we're running in
 	bool compile_mode;
@@ -394,8 +405,7 @@ public:
 		out << "}" << endl;
 
 	}
-
-        //Dimitar Shterionov
+	
 	void writeNNF(const char *fileName)
 	{
 		ofstream out(fileName);
@@ -427,31 +437,19 @@ public:
 			toSTDOUT(i << " -> " << trans[i] << endl);
 		}
 	}
-        //Dimitar Shterionov:
-        void smoothNNF()
-        {
-            vector<DTNode*> *nodeList = new vector<DTNode*> ();
-            DTNode* root;
-
-            if (1 == decStack.top().getDTNode()->numChildren())
-		root = decStack.top().getDTNode()->onlyChild();
-            else
-                root = decStack.top().getDTNode();
-
-            root->getAllNodes(nodeList);
-            root->smoothNode(nodeList);
-
-            //Add ignored literals to the root
-            set<int> allLiterals; //i starts from 2 ignoring the first two zeros
-            for (int i = 1; (i*2)< litNodes.size(); i++)
-                allLiterals.insert(abs(litNodes.at((i*2))->getVal()));
-
-            set<int> rootLiterals = root->litNums();
-            if (root->getType() == DT_AND)
-                root->transformAndToSmoothed(root->getDifferenceLits(rootLiterals, allLiterals), nodeList);
-            else if (root->getType() == DT_OR)
-                root->transformOrToSmoothed(root->getDifferenceLits(rootLiterals, allLiterals), nodeList);
-        }
+	
+	void translateLiterals(const vector<int> varTranslation) {
+		for (int i = 0; i < litNodes.size(); i++) {
+			if (litNodes[i]->getVal() < 0)
+			{
+				litNodes[i]->setVal(-1 * varTranslation[-1 * litNodes[i]->getVal()]);
+			}
+			else
+			{
+				litNodes[i]->setVal(varTranslation[litNodes[i]->getVal()]);
+			}
+		}
+	}
 };
 
 /*@}*/
