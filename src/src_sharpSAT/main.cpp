@@ -69,7 +69,7 @@ void finalcSATEvaluation()
 	toSTDOUT("cache retrievals:\t"<<rAda.get(FCACHE_RETRIEVALS)<<endl);
 	toSTDOUT("cache tries:\t\t"<<rAda.get(FCACHE_INCLUDETRIES)<<endl);
 
-	toSTDOUT("\n\nZeit: "<<rAda.elapsedTime<<"s\n\n");
+	toSTDOUT("\n\nTime: "<<rAda.elapsedTime<<"s\n\n");
 
 	cout << "Runtime:" << rAda.elapsedTime << endl;
 
@@ -93,6 +93,9 @@ int main(int argc, char *argv[])
 	strcpy(nnfFile, "nnf.txt");
 	bool nnfFileout = false;
 
+        //Dimitar Shterionov:
+        bool smoothNNF = false;
+        
 	CSolverConf::analyzeConflicts = true;
 	CSolverConf::doNonChronBackTracking = true;
 	CSolverConf::nodeCount = 0;
@@ -115,6 +118,10 @@ int main(int argc, char *argv[])
 				<< "\t -Fgraph [file] \t file to output the backdoor or d-DNNF graph"
 				<< endl;
 		cout << "\t -Fnnf [file] \t file to output the nnf graph to" << endl;
+
+                //Dimitar Shterionov:
+                cout << "\t -smoothNNF \t post processing to smoothed d-DNNF" << endl;
+
 		cout << "\t" << endl;
 
 		return -1;
@@ -128,6 +135,11 @@ int main(int argc, char *argv[])
 			CSolverConf::allowComponentCaching = false;
 		if (strcmp(argv[i], "-noIBCP") == 0)
 			CSolverConf::allowImplicitBCP = false;
+
+		//Dimitar Shterionov:
+		if (strcmp(argv[i], "-smoothNNF") == 0)
+			CSolverConf::smoothNNF = true;
+              
 		if (strcmp(argv[i], "-noPP") == 0)
 			CSolverConf::allowPreProcessing = false;
 		else if (strcmp(argv[i], "-noCA") == 0)

@@ -60,14 +60,6 @@ class CMainSolver: public CInstanceGraph
 	bool enable_DT_recording;
 	vector<DTNode *> litNodes;
 	vector<pair<DTNode *, DTNode *> > dirtyLitNodes;
-
-	DTNode * get_lit_node(int lit)
-	{
-		if (lit < 0)
-			return litNodes[lit * -2 + 1];
-		else
-			return litNodes[lit * 2];
-	}
 	////-----------////
 
 	vector<LiteralIdT> backbones;
@@ -239,6 +231,25 @@ private:
 
 public:
 
+	DTNode * get_lit_node(int lit)
+	{
+		if (lit < 0)
+			return litNodes[lit * -2 + 1];
+		else
+			return litNodes[lit * 2];
+	}
+	
+	DTNode * get_lit_node_full(int lit)
+	{
+		for (int i = 0; i < litNodes.size(); i++) {
+			if (lit == litNodes[i]->getVal()) {
+				return litNodes[i];
+			}
+		}
+		litNodes.push_back(new DTNode(lit, true, num_Nodes++));
+		return litNodes[litNodes.size() - 1];
+	}
+
 	// Variable to determine the mode we're running in
 	bool compile_mode;
 
@@ -394,7 +405,7 @@ public:
 		out << "}" << endl;
 
 	}
-
+	
 	void writeNNF(const char *fileName)
 	{
 		ofstream out(fileName);
@@ -405,17 +416,17 @@ public:
 		if (1 == decStack.top().getDTNode()->numChildren())
 			root = decStack.top().getDTNode()->onlyChild();
 		else
-			root = decStack.top().getDTNode();
+                        root = decStack.top().getDTNode();
 
-		root->prepNNF(nodeList);
-
+                root->prepNNF(nodeList);
+                
 		out << "nnf " << nodeList->size() << " " << bdg_edge_count << " "
 				<< bdg_var_count << endl;
 
 		for (int i = 0; i < nodeList->size(); i++)
 		{
 			nodeList->at(i)->genNNF(out);
-		}
+                }
 	}
 
 	void print_translation(const vector<int> trans)
@@ -424,6 +435,19 @@ public:
 		for (int i = 0; i < trans.size(); ++i)
 		{
 			toSTDOUT(i << " -> " << trans[i] << endl);
+		}
+	}
+	
+	void translateLiterals(const vector<int> varTranslation) {
+		for (int i = 0; i < litNodes.size(); i++) {
+			if (litNodes[i]->getVal() < 0)
+			{
+				litNodes[i]->setVal(-1 * varTranslation[-1 * litNodes[i]->getVal()]);
+			}
+			else
+			{
+				litNodes[i]->setVal(varTranslation[litNodes[i]->getVal()]);
+			}
 		}
 	}
 };

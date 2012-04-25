@@ -24,6 +24,7 @@
 
 #include <set>
 #include <vector>
+#include <algorithm>
 #include <iostream>
 
 #include <SomeTime.h>
@@ -31,13 +32,17 @@
 #include "InstanceGraph/ComponentTypes.h"
 
 #include "../Basics.h"
+
 using namespace std;
+
+class CMainSolver;
 
 class DTNode
 {
 	DT_NodeType type;
 	set<DTNode *> children;
 	set<DTNode *> parents;
+	set<int> variables;
 
 	int val;
 	int id;
@@ -107,17 +112,25 @@ public:
 	set<DTNode *>::iterator getChildrenBegin();
 	set<DTNode *>::iterator getChildrenEnd();
 
+	set<int>::iterator getVariablesBegin();
+	set<int>::iterator getVariablesEnd();
+	int numVariables();
+	bool hasVariable(int var);
+
 	DTNode * onlyChild();
 
 	DT_NodeType getType();
 	int getID();
 	int getVal();
+	
+	void setVal(int v) {val = v;}
 
 	bool isBottom();
 	bool isTop();
 	bool isValid();
 
 	void topIfy();
+	void botIfy();
 
 	// Parent methods
 	void addParent(DTNode * newParent, bool link = false);
@@ -129,14 +142,13 @@ public:
 	bool childDeleted(DTNode * oldChild);
 	int numChildren();
 	bool hasChild(DTNode * child);
-
+        
 	void compressNode();
 	int count(bool isRoot);
 	void uncheck(int unID);
 
 	void reset();
 	bool validate();
-	void translateLiterals(const vector<int> varTranslation);
 
 	void prepNNF(vector<DTNode*> * nodeList);
 	void genNNF(ostream & out);
@@ -146,6 +158,10 @@ public:
 
 	// Sanity checks
 	bool checkCycle(int sourceID, bool first = true);
+
+	// Smoothing
+	void smooth(int &num_nodes, CMainSolver &solver, set<int> &literals);
+	void sub_parents(DTNode *newChild);
 };
 
 #endif
