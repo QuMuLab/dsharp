@@ -11,6 +11,8 @@ bool CSolverConf::allowPreProcessing = true;
 
 bool CSolverConf::quietMode = false;
 
+bool CSolverConf::smoothNNF = false;
+
 unsigned int CSolverConf::secsTimeBound = 100000;
 
 unsigned int CSolverConf::maxCacheSize = 0;
