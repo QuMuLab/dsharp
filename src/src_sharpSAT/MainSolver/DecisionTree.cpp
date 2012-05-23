@@ -665,9 +665,9 @@ void DTNode::prepNNF(vector<DTNode*> * nodeList)
 	if (nnfID != -1)
 		return;
 
-	if ((DT_TOP == type) || (DT_BOTTOM == type))
+	if (((DT_TOP == type) || (DT_BOTTOM == type)) && !(CSolverConf::smoothNNF))
 	{
-		toSTDOUT("Error: type of DTNode is either top or bottom.");
+		toSTDOUT("Error: type of DTNode is either top or bottom." << endl);
 		return;
 	}
 
