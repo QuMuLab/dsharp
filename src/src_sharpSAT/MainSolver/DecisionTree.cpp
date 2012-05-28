@@ -488,7 +488,7 @@ void DTNode::compressNode()
 			}
 		}
 
-		// Finally check for 'OR' children (we want the final graph to be an AND-OR tree)
+		// Check for 'OR' children (we want the final graph to be an AND-OR tree)
 		found = true;
 		while (found)
 		{
@@ -521,6 +521,22 @@ void DTNode::compressNode()
 					// Mark as found
 					found = true;
 				}
+			}
+		}
+		
+		// Finally, revert to true if two children are opposite literals
+		{
+			set<int> litChildren;
+			found = false;
+			for (it = children.begin(); it != children.end(); it++) {
+				if (DT_LIT == (*it)->getType()) {
+					if (litChildren.find(-1 * (*it)->getVal()) != litChildren.end())
+						found = true;
+					litChildren.insert((*it)->getVal());
+				}
+			}
+			if (found) {
+				topIfy();
 			}
 		}
 		break;
