@@ -13,6 +13,8 @@ bool CSolverConf::quietMode = false;
 
 bool CSolverConf::smoothNNF = false;
 
+bool CSolverConf::disableDynamicDecomp = false;
+
 unsigned int CSolverConf::secsTimeBound = 100000;
 
 unsigned int CSolverConf::maxCacheSize = 0;

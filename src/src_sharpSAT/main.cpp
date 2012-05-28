@@ -139,6 +139,9 @@ int main(int argc, char *argv[])
 		//Dimitar Shterionov:
 		if (strcmp(argv[i], "-smoothNNF") == 0)
 			CSolverConf::smoothNNF = true;
+		
+		if (strcmp(argv[i], "-noDynDecomp") == 0)
+		    CSolverConf::disableDynamicDecomp = true;
               
 		if (strcmp(argv[i], "-noPP") == 0)
 			CSolverConf::allowPreProcessing = false;

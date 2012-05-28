@@ -591,14 +591,41 @@ bool CMainSolver::recordRemainingComps()
 	}
 
 	vector<LiteralIdT>::const_iterator itL;
-
-	for (vt = refSupComp.varsBegin(); *vt != varsSENTINEL; vt++)
-		if (lookUpVars[*vt] == IN_SUP_COMP)
-		{
-			decStack.TOS_addRemComp();
-
-			getComp(*vt, decStack.TOSRefComp(), lookUpCls, lookUpVars);
-		}
+	
+	componentSearchStack.clear();
+	
+	if (CSolverConf::disableDynamicDecomp)
+	{
+	
+	    decStack.TOS_addRemComp();
+	    decStack.lastComp().setTrueClauseCount(0);
+	    
+	    for (vt = refSupComp.varsBegin(); *vt != varsSENTINEL; vt++)
+		    if (lookUpVars[*vt] == IN_SUP_COMP)
+		    {
+		        lookUpVars[*vt] = SEEN;
+	            componentSearchStack.push_back(*vt);
+	            getComp(*vt, decStack.TOSRefComp(), lookUpCls, lookUpVars);
+		    }
+	    
+	    decStack.lastComp().addVar(varsSENTINEL);
+	    decStack.lastComp().addCl(clsSENTINEL);
+	    
+	}
+	else
+	{
+	    for (vt = refSupComp.varsBegin(); *vt != varsSENTINEL; vt++)
+		    if (lookUpVars[*vt] == IN_SUP_COMP)
+		    {
+			    decStack.TOS_addRemComp();
+			    decStack.lastComp().setTrueClauseCount(0);
+                lookUpVars[*vt] = SEEN;
+            	componentSearchStack.push_back(*vt);
+			    getComp(*vt, decStack.TOSRefComp(), lookUpCls, lookUpVars);
+			    decStack.lastComp().addVar(varsSENTINEL);
+			    decStack.lastComp().addCl(clsSENTINEL);
+		    }
+    }
 
 	decStack.TOS_sortRemComps();
 	return true;
@@ -607,10 +634,12 @@ bool CMainSolver::recordRemainingComps()
 bool CMainSolver::getComp(const VarIdT &theVar, const CComponentId &superComp,
 		viewStateT lookUpCls[], viewStateT lookUpVars[])
 {
-	componentSearchStack.clear();
-
-	lookUpVars[theVar] = SEEN;
-	componentSearchStack.push_back(theVar);
+    /* Moved to above */
+	//componentSearchStack.clear();
+	//lookUpVars[theVar] = SEEN;
+	//componentSearchStack.push_back(theVar);
+	
+	
 	vector<VarIdT>::const_iterator vt, itVEnd;
 
 	vector<LiteralIdT>::const_iterator itL;
@@ -704,7 +733,7 @@ bool CMainSolver::getComp(const VarIdT &theVar, const CComponentId &superComp,
 			lookUpVars[*vt] = IN_OTHER_COMP;
 		}
 
-	decStack.lastComp().addVar(varsSENTINEL);
+	//decStack.lastComp().addVar(varsSENTINEL); // Moved to above
 
 	/////////////////////////////////////////////////
 	// END store variables in resComp
@@ -716,8 +745,9 @@ bool CMainSolver::getComp(const VarIdT &theVar, const CComponentId &superComp,
 			decStack.lastComp().addCl(*itCl);
 			lookUpCls[*itCl] = IN_OTHER_COMP;
 		}
-	decStack.lastComp().addCl(clsSENTINEL);
-	decStack.lastComp().setTrueClauseCount(nClausesSeen + nBinClsSeen);
+	//decStack.lastComp().addCl(clsSENTINEL); // Moved to above
+	
+	decStack.lastComp().addTrueClauseCount(nClausesSeen + nBinClsSeen);
 
 	return true;
 }
