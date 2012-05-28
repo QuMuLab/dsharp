@@ -152,6 +152,11 @@ public:
     {
         trueClauseCount = count;
     }
+    
+    void addTrueClauseCount(unsigned int count)
+    {
+        trueClauseCount += count;
+    }
 
     unsigned int getClauseCount()
     {
