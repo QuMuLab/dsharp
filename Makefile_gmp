@@ -63,7 +63,7 @@ OBJECTS = Basics.o \
 		AtomsAndNodes.o \
 		main.o \
 		FormulaCache.o
-TARGET   = sharpSAT
+TARGET   = dsharp
 
 DDNNF_TARGET = dsharp
 BDG_TARGET = dsharp-bdg
