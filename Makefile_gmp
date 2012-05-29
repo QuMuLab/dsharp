@@ -108,7 +108,6 @@ clean:
 ddnnf:
 	$(COPY) $(DDNNF) $(BASIC)
 	make all
-	$(MOVE) $(TARGET) $(DDNNF_TARGET)
 
 bdg:
 	$(COPY) $(BDG) $(BASIC)
