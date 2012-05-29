@@ -31,6 +31,8 @@ public:
     
     static bool smoothNNF;
     
+    static bool disableDynamicDecomp;
+    
     CSolverConf();
 
     ~CSolverConf();
