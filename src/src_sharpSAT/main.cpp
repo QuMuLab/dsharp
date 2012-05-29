@@ -106,10 +106,11 @@ int main(int argc, char *argv[])
 		cout << "Usage: dsharp [options] [CNF_File]" << endl;
 		cout << "Options: " << endl;
 		cout << "\t -noPP  \t turn off preprocessing" << endl;
-		cout << "\t -noCA  \t no conflict analysis nor -clauses" << endl;
+		cout << "\t -noCA  \t turn off conflict analysis" << endl;
 		cout << "\t -noCC  \t turn off component caching" << endl;
 		cout << "\t -noNCB \t turn off nonchronological backtracking" << endl;
 		cout << "\t -noIBCP\t turn off implicit BCP" << endl;
+		cout << "\t -noDynDecomp\t turn off dynamic decomposition" << endl;
 		cout << "\t -q     \t quiet mode" << endl;
 		cout << "\t -t [s] \t set time bound to s seconds" << endl;
 		cout << "\t -cs [n]\t set max cache size to n MB" << endl;
@@ -139,6 +140,9 @@ int main(int argc, char *argv[])
 		//Dimitar Shterionov:
 		if (strcmp(argv[i], "-smoothNNF") == 0)
 			CSolverConf::smoothNNF = true;
+		
+		if (strcmp(argv[i], "-noDynDecomp") == 0)
+		    CSolverConf::disableDynamicDecomp = true;
               
 		if (strcmp(argv[i], "-noPP") == 0)
 			CSolverConf::allowPreProcessing = false;
