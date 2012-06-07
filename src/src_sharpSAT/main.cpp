@@ -105,23 +105,23 @@ int main(int argc, char *argv[])
 
 		cout << "Usage: dsharp [options] [CNF_File]" << endl;
 		cout << "Options: " << endl;
-		cout << "\t -noPP  \t turn off preprocessing" << endl;
-		cout << "\t -noCA  \t turn off conflict analysis" << endl;
-		cout << "\t -noCC  \t turn off component caching" << endl;
-		cout << "\t -noNCB \t turn off nonchronological backtracking" << endl;
-		cout << "\t -noIBCP\t turn off implicit BCP" << endl;
-		cout << "\t -noDynDecomp\t turn off dynamic decomposition" << endl;
-		cout << "\t -q     \t quiet mode" << endl;
-		cout << "\t -t [s] \t set time bound to s seconds" << endl;
-		cout << "\t -cs [n]\t set max cache size to n MB" << endl;
-		cout << "\t -FrA [file] \t file to output the run statistics" << endl;
-		cout
-				<< "\t -Fgraph [file] \t file to output the backdoor or d-DNNF graph"
-				<< endl;
-		cout << "\t -Fnnf [file] \t file to output the nnf graph to" << endl;
+		cout << "\t -noPP  \t\t turn off preprocessing" << endl;
+		cout << "\t -noCA  \t\t turn off conflict analysis" << endl;
+		cout << "\t -noCC  \t\t turn off component caching" << endl;
+		cout << "\t -noNCB \t\t turn off nonchronological backtracking" << endl;
+		cout << "\t -noIBCP\t\t turn off implicit BCP" << endl;
+		cout << "\t -noDynDecomp\t\t turn off dynamic decomposition" << endl;
+		cout << "\t -q     \t\t quiet mode" << endl;
+		cout << "\t -t [s] \t\t set time bound to s seconds" << endl;
+		cout << "\t -cs [n]\t\t set max cache size to n MB" << endl;
+		cout << "\t -FrA [file] \t\t file to output the run statistics" << endl;
+		cout << "\t -Fgraph [file] \t file to output the backdoor or d-DNNF graph" << endl;
+		cout << "\t -Fnnf [file] \t\t file to output the nnf graph to" << endl;
 
-                //Dimitar Shterionov:
-                cout << "\t -smoothNNF \t post processing to smoothed d-DNNF" << endl;
+        //Dimitar Shterionov:
+        cout << "\t -smoothNNF \t\t post processing to smoothed d-DNNF" << endl;
+        
+        cout << "\t -disableAllLits \t when producing a smooth d-DNNF, don't bother enforcing every literal" << endl;
 
 		cout << "\t" << endl;
 
@@ -140,6 +140,9 @@ int main(int argc, char *argv[])
 		//Dimitar Shterionov:
 		if (strcmp(argv[i], "-smoothNNF") == 0)
 			CSolverConf::smoothNNF = true;
+		
+		if (strcmp(argv[i], "-disableAllLits") == 0)
+			CSolverConf::ensureAllLits = false;
 		
 		if (strcmp(argv[i], "-noDynDecomp") == 0)
 		    CSolverConf::disableDynamicDecomp = true;

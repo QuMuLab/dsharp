@@ -177,7 +177,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 				newOr->addChild(new DTNode(i, true, num_Nodes++), true);
 				newOr->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
 				
-			} else if (literals.find(i) == literals.end()) {
+			} else if ((literals.find(i) == literals.end()) && CSolverConf::ensureAllLits) {
 				
 				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
 				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
@@ -190,7 +190,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 				newAnd->addChild(new DTNode(i, true, num_Nodes++), true);
 				newAnd->addChild(botNode, true);
 				
-			} else if (literals.find(-1 * i) == literals.end()) {
+			} else if ((literals.find(-1 * i) == literals.end()) && CSolverConf::ensureAllLits) {
 				
 				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
 				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
