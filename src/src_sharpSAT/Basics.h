@@ -30,6 +30,7 @@ public:
     static int nodeCount; // Nodes currently in use
     
     static bool smoothNNF;
+    static bool ensureAllLits;
     
     static bool disableDynamicDecomp;
 
