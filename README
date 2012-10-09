@@ -1,9 +1,9 @@
 DSHARP version 1.0
 
 If you would like the solver to use infinite precision numbers for the counting,
-you must have the GMP library installed. To use the version with GMP, copy the
-Makefile_gmp to Makefile. Otherwise, copy Makefile_nogmp to Makefile and proceed
-normally.
+you must have the GMP library (libgmp-dev) installed. To use the version with GMP,
+copy the Makefile_gmp to Makefile. Otherwise, copy Makefile_nogmp to Makefile and
+proceed normally.
 
 To compile this version of DSHARP simply run
 make
