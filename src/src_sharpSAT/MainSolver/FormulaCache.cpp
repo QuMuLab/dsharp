@@ -1,3 +1,4 @@
+#include <unistd.h>
 #include "FormulaCache.h"
 
 unsigned int CFormulaCache::oldestEntryAllowed = (unsigned int) -1;
