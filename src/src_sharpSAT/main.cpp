@@ -228,6 +228,11 @@ int main(int argc, char *argv[])
 	if (fileout)
 		theRunAn.getData().writeToFile(dataFile);
 
+        if (0 == theRunAn.getData().getNumSatAssignments()) {
+            cout << "\nTheory is unsat. Skipping file output.\n" << endl;
+            return 0;
+        }
+
 	if (graphFileout)
 		theSolver.writeBDG(graphFile);
 
