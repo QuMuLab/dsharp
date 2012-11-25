@@ -66,6 +66,9 @@ public:
 		nnfID = -1;
 		CSolverConf::nodeCount++;
 		uncheckID = 0;
+		
+		// Store the variable for this leaf node by default
+		variables.insert((literal < 0) ? -1 * literal : literal);
 	}
 
 	DTNode(DT_NodeType newType, int CURRENT_ID) :
