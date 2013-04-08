@@ -148,6 +148,10 @@ void CMainSolver::solve(const char *lpstrFileName)
 	// There may have been some translation done during the file parsing
 	//  phase, so we translate the bdg literals back.
 	decStack.top().getDTNode()->uncheck(5);
+        // We may have litnodes that aren't used yet (but will after smoothing).
+        //  Thus, we need to make sure that all litnodes are unchecked.
+        for (int i = 0; i < litNodes.size(); i++)
+                litNodes[i]->uncheck(5);
 	translateLiterals(getOrigTranslation());
 	
 	if (CSolverConf::smoothNNF) {
