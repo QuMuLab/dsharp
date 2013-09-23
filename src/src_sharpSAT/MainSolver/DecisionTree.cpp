@@ -803,16 +803,22 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 	{
 		// If the counts are the same, then it is already smooth
 		if (variables.size() != (*it)->numVariables()) {
-			// Create the new AND child
-			DTNode* newAnd = new DTNode(DT_AND, num_nodes++);
-
-			(*it)->parentDeleted(this);
-			
-			toAdd.insert(newAnd);
-			toRemove.insert(*it);
-			
-			newAnd->addChild(*it, true);
-			
+		
+		    DTNode *childAnd;
+		    
+		    if (DT_AND == (*it)->getType()) {
+		        childAnd = *it;
+		    } else {
+		        // Create the new AND child
+    			childAnd = new DTNode(DT_AND, num_nodes++);
+    			cout << "Creating a new and for node " << id << endl;
+    			cout << "New node count: " << num_nodes << endl;
+    			(*it)->parentDeleted(this);
+			    toAdd.insert(childAnd);
+			    toRemove.insert(*it);
+			    childAnd->addChild(*it, true);
+		    }
+		    
 			// Add all of the missing variables
 			set<int>::iterator var_it;
 			for (var_it = variables.begin(); var_it != variables.end(); var_it++)
@@ -820,14 +826,12 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 				int var = *var_it;
 				if (!((*it)->hasVariable(var)))
 				{
-					DTNode* newOr = new DTNode(DT_OR, num_nodes++);
-					newAnd->addChild(newOr, true);
-					newOr->addChild(solver.get_lit_node_full(var), true);
-					newOr->addChild(solver.get_lit_node_full(-1 * var), true);
+				    cout << var << endl;
+				    childAnd->addChild(solver.get_universal_or(var), true);
 				}
 			}
 			// Record the new values
-			newAnd->smooth(num_nodes, solver, literals);
+			childAnd->smooth(num_nodes, solver, literals);
 		}
 	}
 	

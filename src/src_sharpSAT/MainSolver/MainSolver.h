@@ -59,6 +59,7 @@ class CMainSolver: public CInstanceGraph
 	int num_Nodes;
 	bool enable_DT_recording;
 	vector<DTNode *> litNodes;
+	vector<DTNode *> universalOrNodes;
 	vector<pair<DTNode *, DTNode *> > dirtyLitNodes;
 	////-----------////
 
@@ -231,6 +232,10 @@ private:
 
 public:
 
+    DTNode * get_universal_or(int var)
+    {
+        return universalOrNodes[var];
+    }
 	DTNode * get_lit_node(int lit)
 	{
 		if (lit < 0)

@@ -69,6 +69,10 @@ void CMainSolver::solve(const char *lpstrFileName)
 		//Original:
 		litNodes.push_back(new DTNode(i, true, num_Nodes++));
 		litNodes.push_back(new DTNode(-1 * i, true, num_Nodes++));
+		
+		universalOrNodes.push_back(new DTNode(DT_OR, num_Nodes++));
+		universalOrNodes.back()->addChild(litNodes[litNodes.size()-1]);
+		universalOrNodes.back()->addChild(litNodes[litNodes.size()-2]);
 	}
 
 	toSTDOUT("#Vars:" << countAllVars() << endl);
