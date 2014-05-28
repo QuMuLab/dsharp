@@ -27,6 +27,8 @@ public:
 
     static unsigned int maxCacheSize;   // maximum Cache Size in bytes
     
+    static int relevantVarCount; // Only count the first n variables in model enumeration
+    
     static int nodeCount; // Nodes currently in use
     
     static bool smoothNNF;

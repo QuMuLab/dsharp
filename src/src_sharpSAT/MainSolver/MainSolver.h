@@ -438,6 +438,11 @@ public:
 		}
 	}
 	
+	int originalVariable(int var)
+	{
+	    return getOrigTranslation()[getVarTranslation()[var]];
+	}
+	
 	void translateLiterals(const vector<int> varTranslation) {
 		for (int i = 0; i < litNodes.size(); i++) {
 			if (litNodes[i]->getVal() < 0)
