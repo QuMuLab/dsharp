@@ -117,6 +117,7 @@ int main(int argc, char *argv[])
 		cout << "\t -FrA [file] \t\t file to output the run statistics" << endl;
 		cout << "\t -Fgraph [file] \t file to output the backdoor or d-DNNF graph" << endl;
 		cout << "\t -Fnnf [file] \t\t file to output the nnf graph to" << endl;
+		cout << "\t -varcount [n]\t\t only count models projected to the first n variables" << endl;
 
         //Dimitar Shterionov:
         cout << "\t -smoothNNF \t\t post processing to smoothed d-DNNF" << endl;
@@ -208,6 +209,15 @@ int main(int argc, char *argv[])
 			}
 			CSolverConf::maxCacheSize = atoi(argv[i + 1]) * 1024 * 1024;
 			//cout <<"maxCacheSize:" <<CSolverConf::maxCacheSize<<"bytes\n";
+		}
+		else if (strcmp(argv[i], "-varcount") == 0)
+		{
+		    if (argc <= i + 1)
+		    {
+				toSTDOUT("wrong parameters"<<endl);
+				return -1;
+			}
+			CSolverConf::relevantVarCount = atoi(argv[i + 1]);
 		}
 		else
 			s = argv[i];

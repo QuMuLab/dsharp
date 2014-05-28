@@ -21,6 +21,8 @@ unsigned int CSolverConf::secsTimeBound = 100000;
 
 unsigned int CSolverConf::maxCacheSize = 0;
 
+int CSolverConf::relevantVarCount = 0;
+
 int CSolverConf::nodeCount = 0;
 
 
