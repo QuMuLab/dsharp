@@ -255,8 +255,10 @@ bool CMainSolver::findVSADSDecVar(LiteralIdT &theLit,
 	vector<VarIdT>::const_iterator it;
 
 	int score = -1;
+	int pr_score = -1;
 	int bo;
 	PVARV pVV = NULL;
+	PVARV pr_pVV = NULL;
 
 	for (it = superComp.varsBegin(); *it != varsSENTINEL; it++)
 		if (getVar(*it).isActive())
@@ -268,7 +270,22 @@ bool CMainSolver::findVSADSDecVar(LiteralIdT &theLit,
 				score = bo;
 				pVV = &getVar(*it);
 			}
+			
+			if (0 != priorityVars.count(getVar(*it).getVarNum()))
+			{
+			    if (bo > pr_score)
+			    {
+				    pr_score = bo;
+				    pr_pVV = &getVar(*it);
+			    }
+			}
 		}
+	
+	// If we have a priority variable remaining, then take the best one as a decision
+	if (-1 != pr_score) {
+	    score = pr_score;
+	    pVV = pr_pVV;
+	}
 
 	if (pVV == NULL)
 		return false;
