@@ -2,6 +2,7 @@
 
 #include <ctime> // To seed random generator
 #include <sys/time.h> // To seed random generator
+#include <string>
 //include shared files
 #include <SomeTime.h>
 #include <Interface/AnalyzerData.h>
@@ -105,6 +106,7 @@ int main(int argc, char *argv[])
 
 		cout << "Usage: dsharp [options] [CNF_File]" << endl;
 		cout << "Options: " << endl;
+		cout << "\t -priority [v1,v2,..] \t\t use the priority variables as the first decision nodes" << endl;
 		cout << "\t -noPP  \t\t turn off preprocessing" << endl;
 		cout << "\t -noCA  \t\t turn off conflict analysis" << endl;
 		cout << "\t -noCC  \t\t turn off component caching" << endl;
@@ -120,9 +122,7 @@ int main(int argc, char *argv[])
 
         //Dimitar Shterionov:
         cout << "\t -smoothNNF \t\t post processing to smoothed d-DNNF" << endl;
-        
         cout << "\t -disableAllLits \t when producing a smooth d-DNNF, don't bother enforcing every literal" << endl;
-
 		cout << "\t" << endl;
 
 		return -1;
@@ -198,6 +198,25 @@ int main(int argc, char *argv[])
 			CSolverConf::secsTimeBound = atoi(argv[i + 1]);
 			toSTDOUT("time bound:" <<CSolverConf::secsTimeBound<<"s\n");
 			theSolver.setTimeBound(CSolverConf::secsTimeBound);
+		}
+		else if (strcmp(argv[i], "-priority") == 0)
+		{
+			if (argc <= i + 1)
+			{
+				toSTDOUT("wrong parameters"<<endl);
+				return -1;
+			}
+			
+			size_t pos = 0;
+			string s = string(argv[i+1]);
+			string token;
+            while ((pos = s.find(",")) != string::npos) {
+                token = s.substr(0, pos);
+                theSolver.priorityVars.insert(atoi(token.c_str()));
+                s.erase(0, pos + 1);
+            }
+            theSolver.priorityVars.insert(atoi(s.c_str()));
+			toSTDOUT("Using " << theSolver.priorityVars.size() << " priority variables.\n");
 		}
 		else if (strcmp(argv[i], "-cs") == 0)
 		{
