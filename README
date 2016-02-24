@@ -8,3 +8,12 @@ proceed normally.
 To compile this version of DSHARP simply run
 make
 
+Please cite using the following:
+
+@inproceedings{Muise2012,
+    author = {Muise, Christian and McIlraith, Sheila A. and Beck, J. Christopher and Hsu, Eric},
+    booktitle = {Canadian Conference on Artificial Intelligence},
+    title = {{DSHARP: Fast d-DNNF Compilation with sharpSAT}},
+    keywords = {sat, knowledge compilation},
+    year = {2012}
+}
