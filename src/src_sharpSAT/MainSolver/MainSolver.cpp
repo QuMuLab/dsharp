@@ -50,7 +50,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 	stopWatch.markStartTime();
 
 	num_Nodes = 3;
-	
+
 	enable_DT_recording = true;
 
 	createfromFile(lpstrFileName);
@@ -144,7 +144,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 	decStack.top().getDTNode()->uncheck(4);
 	bdg_edge_count = decStack.top().getDTNode()->count(true);
 	cout << "Compressed Edges: " << bdg_edge_count << endl;
-	
+
 	// There may have been some translation done during the file parsing
 	//  phase, so we translate the bdg literals back.
 	decStack.top().getDTNode()->uncheck(5);
@@ -153,62 +153,62 @@ void CMainSolver::solve(const char *lpstrFileName)
         for (int i = 0; i < litNodes.size(); i++)
                 litNodes[i]->uncheck(5);
 	translateLiterals(getOrigTranslation());
-	
+
 	if (CSolverConf::smoothNNF) {
 		// Smooth the d-DNNF (note: this may cause AND-AND parent-children)
 		set<int> literals;
 		decStack.top().getDTNode()->uncheck(6);
 		decStack.top().getDTNode()->smooth(num_Nodes, *this, literals);
-		
+
 		// See if we've got every literal in the d-DNNF
 		if (2 * originalVarCount == literals.size())
 			return;
-		
+
 		// TODO: Fix an AND node to the top
 		if (DT_AND != decStack.top().getDTNode()->getType())
 			toSTDOUT("Error: The top node wasn't an AND node.");
-		
+
 		// Make sure that every literal appears some place
 		DTNode* botNode = new DTNode(DT_AND, num_Nodes++);
 		botNode->botIfy();
 		for (int i = 1; i <= originalVarCount; ++i) {
-		
+
 			// Check if neither exist
 			if ((literals.find(i) == literals.end()) &&
 				(literals.find(-1 * i) == literals.end())) {
-					
+
 				// Add an arbitrary choice between the two
 				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
 				decStack.top().getDTNode()->addChild(newOr, true);
 				newOr->addChild(new DTNode(i, true, num_Nodes++), true);
 				newOr->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
-				
+
 			} else if ((literals.find(i) == literals.end()) && CSolverConf::ensureAllLits) {
-				
+
 				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
 				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
-				
+
 				get_lit_node_full(-1 * i)->sub_parents(newOr);
-				
+
 				newOr->addChild(get_lit_node_full(-1 * i), true);
 				newOr->addChild(newAnd, true);
-				
+
 				newAnd->addChild(new DTNode(i, true, num_Nodes++), true);
 				newAnd->addChild(botNode, true);
-				
+
 			} else if ((literals.find(-1 * i) == literals.end()) && CSolverConf::ensureAllLits) {
-				
+
 				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
 				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
-				
+
 				get_lit_node_full(i)->sub_parents(newOr);
-				
+
 				newOr->addChild(get_lit_node_full(i), true);
 				newOr->addChild(newAnd, true);
-				
+
 				newAnd->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
 				newAnd->addChild(botNode, true);
-				
+
 			}
 		}
 	}
@@ -270,7 +270,7 @@ bool CMainSolver::findVSADSDecVar(LiteralIdT &theLit,
 				score = bo;
 				pVV = &getVar(*it);
 			}
-			
+
 			if (0 != priorityVars.count(getVar(*it).getVarNum()))
 			{
 			    if (bo > pr_score)
@@ -280,7 +280,7 @@ bool CMainSolver::findVSADSDecVar(LiteralIdT &theLit,
 			    }
 			}
 		}
-	
+
 	// If we have a priority variable remaining, then take the best one as a decision
 	if (-1 != pr_score) {
 	    score = pr_score;
@@ -614,15 +614,15 @@ bool CMainSolver::recordRemainingComps()
 	}
 
 	vector<LiteralIdT>::const_iterator itL;
-	
+
 	componentSearchStack.clear();
-	
+
 	if (CSolverConf::disableDynamicDecomp)
 	{
-	
+
 	    decStack.TOS_addRemComp();
 	    decStack.lastComp().setTrueClauseCount(0);
-	    
+
 	    for (vt = refSupComp.varsBegin(); *vt != varsSENTINEL; vt++)
 		    if (lookUpVars[*vt] == IN_SUP_COMP)
 		    {
@@ -630,10 +630,10 @@ bool CMainSolver::recordRemainingComps()
 	            componentSearchStack.push_back(*vt);
 	            getComp(*vt, decStack.TOSRefComp(), lookUpCls, lookUpVars);
 		    }
-	    
+
 	    decStack.lastComp().addVar(varsSENTINEL);
 	    decStack.lastComp().addCl(clsSENTINEL);
-	    
+
 	}
 	else
 	{
@@ -661,8 +661,8 @@ bool CMainSolver::getComp(const VarIdT &theVar, const CComponentId &superComp,
 	//componentSearchStack.clear();
 	//lookUpVars[theVar] = SEEN;
 	//componentSearchStack.push_back(theVar);
-	
-	
+
+
 	vector<VarIdT>::const_iterator vt, itVEnd;
 
 	vector<LiteralIdT>::const_iterator itL;
@@ -769,7 +769,7 @@ bool CMainSolver::getComp(const VarIdT &theVar, const CComponentId &superComp,
 			lookUpCls[*itCl] = IN_OTHER_COMP;
 		}
 	//decStack.lastComp().addCl(clsSENTINEL); // Moved to above
-	
+
 	decStack.lastComp().addTrueClauseCount(nClausesSeen + nBinClsSeen);
 
 	return true;
@@ -1462,9 +1462,13 @@ bool CMainSolver::prepBCP(LiteralIdT firstLit)
 	vector<LiteralIdT>::iterator lt;
 	CVariableVertex *pV;
 
-	for (unsigned int i = 0; i < impls.size(); i++)
-		if (getVar(impls[i]).setVal(impls[i].polarity(), 0))
-		{
+	for (unsigned int i = 0; i < impls.size(); i++) {
+		if (!(getVar(impls[i]).setVal(impls[i].polarity(), 0))) {
+            // When the setVal fails, it means that the variable was already
+            //  set. We check here to see if it was set the wrong way.
+            if (getVar(impls[i]).getboolVal() != impls[i].polarity())
+                return false;
+        } else {
 			unLit = impls[i].oppositeLit();
 			satLit = impls[i];
 			pV = &getVar(satLit);
@@ -1568,6 +1572,7 @@ bool CMainSolver::prepBCP(LiteralIdT firstLit)
 
 			pV->eraseAllEdges();
 		}
+    }
 	return true;
 }
 

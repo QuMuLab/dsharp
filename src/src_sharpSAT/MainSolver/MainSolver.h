@@ -238,7 +238,7 @@ public:
 		else
 			return litNodes[lit * 2];
 	}
-	
+
 	DTNode * get_lit_node_full(int lit)
 	{
 		for (int i = 0; i < litNodes.size(); i++) {
@@ -256,7 +256,7 @@ public:
 	// Variables for the nnf generation
 	int bdg_edge_count;
 	int bdg_var_count;
-	
+
 	// Variables that should be decided on first
 	set<int> priorityVars;
 
@@ -408,7 +408,7 @@ public:
 		out << "}" << endl;
 
 	}
-	
+
 	void writeNNF(const char *fileName)
 	{
 		ofstream out(fileName);
@@ -422,7 +422,7 @@ public:
                         root = decStack.top().getDTNode();
 
                 root->prepNNF(nodeList);
-                
+
 		out << "nnf " << nodeList->size() << " " << bdg_edge_count << " "
 				<< bdg_var_count << endl;
 
@@ -440,7 +440,7 @@ public:
 			toSTDOUT(i << " -> " << trans[i] << endl);
 		}
 	}
-    
+
 	void translateLiterals(const vector<int> varTranslation) {
 		for (int i = 0; i < litNodes.size(); i++) {
 			if (litNodes[i]->getVal() < 0)
