@@ -14,7 +14,7 @@ proceed normally.
 To compile this version of DSHARP simply run `make`
 
 ## Citing
-
+```
 @inproceedings{Muise2012,
     author = {Muise, Christian and McIlraith, Sheila A. and Beck, J. Christopher and Hsu, Eric},
     booktitle = {Canadian Conference on Artificial Intelligence},
@@ -22,3 +22,4 @@ To compile this version of DSHARP simply run `make`
     keywords = {sat, knowledge compilation},
     year = {2012}
 }
+```
