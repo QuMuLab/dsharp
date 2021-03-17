@@ -50,7 +50,7 @@ class DTNode
 
 public:
 
-	int choiceVar;
+	unsigned choiceVar;
 	int nnfID;
 
 	bool checked;

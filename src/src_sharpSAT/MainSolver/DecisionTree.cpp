@@ -723,11 +723,7 @@ void DTNode::genNNF(ostream & out)
 	}
 	else if (DT_OR == type)
 	{
-		//Dimitar Sht. Shterionov: ignoring negative values on OR nodes
-		if (choiceVar > 0)
-			out << "O " << choiceVar << " " << children.size();
-		else
-			out << "O 0 " << children.size();
+		out << "O " << choiceVar << " " << children.size();
 
 		if (2 != children.size())
 			toSTDOUT("Error: Or node with " << children.size() << " children.");

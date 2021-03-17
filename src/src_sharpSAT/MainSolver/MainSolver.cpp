@@ -356,7 +356,7 @@ bool CMainSolver::decide()
 	DTNode * leftLit = get_lit_node(theLit.toSignedInt());
 	DTNode * rightLit = get_lit_node(-1 * theLit.toSignedInt());
 
-	newNode->choiceVar = theLit.toSignedInt();
+	newNode->choiceVar = theLit.toVarIdx();
 
 	// Set the parents
 	left->addParent(newNode, true);

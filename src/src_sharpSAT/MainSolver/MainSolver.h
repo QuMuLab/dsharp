@@ -333,7 +333,7 @@ public:
 					out << "AND";
 					break;
 				case DT_OR:
-					out << "OR";
+					out << "OR " << node->choiceVar;
 					break;
 				case DT_BOTTOM:
 					out << "F";
@@ -442,14 +442,54 @@ public:
 	}
     
 	void translateLiterals(const vector<int> varTranslation) {
-		for (int i = 0; i < litNodes.size(); i++) {
-			if (litNodes[i]->getVal() < 0)
+		set<int> nodesSeen;
+		queue<DTNode *> openList;
+		openList.push(decStack.top().getDTNode());
+
+		int rootID = openList.front()->getID();
+
+		DTNode *node;
+		while (!openList.empty())
+		{
+			node = openList.front();
+			openList.pop();
+
+			int node_id = node->getID();
+
+			if (nodesSeen.find(node_id) == nodesSeen.end())
 			{
-				litNodes[i]->setVal(-1 * varTranslation[-1 * litNodes[i]->getVal()]);
-			}
-			else
-			{
-				litNodes[i]->setVal(varTranslation[litNodes[i]->getVal()]);
+				// Make sure we don't add this twice
+				nodesSeen.insert(node_id);
+
+				// Add the children to the open list
+				set<DTNode *>::iterator it;
+				for (it = node->getChildrenBegin(); it
+						!= node->getChildrenEnd(); it++)
+				{
+					openList.push(*it);
+				}
+
+				// process the node
+				if (DT_LIT == node->getType())
+				{
+					if (node->getVal() < 0)
+					{
+						node->setVal(-1 * varTranslation[-1 * node->getVal()]);
+					}
+					else
+					{
+						node->setVal(varTranslation[node->getVal()]);
+					}
+				}
+
+				if (DT_OR == node->getType())
+				{
+					if (node->choiceVar) {
+						node->choiceVar = varTranslation[node->choiceVar];
+					}
+				}
+
+
 			}
 		}
 	}
