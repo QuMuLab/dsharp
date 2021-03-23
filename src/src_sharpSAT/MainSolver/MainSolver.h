@@ -432,7 +432,7 @@ public:
                 }
 	}
 
-	void print_translation(const vector<int> trans)
+	void print_translation(const vector<unsigned> trans)
 	{
 		toSTDOUT("Translation:" << endl);
 		for (int i = 0; i < trans.size(); ++i)
@@ -441,7 +441,7 @@ public:
 		}
 	}
     
-	void translateLiterals(const vector<int> varTranslation) {
+	void translateLiterals(const vector<unsigned> varTranslation) {
 		set<int> nodesSeen;
 		queue<DTNode *> openList;
 		openList.push(decStack.top().getDTNode());
