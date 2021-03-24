@@ -820,6 +820,7 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 					newAnd->addChild(newOr, true);
 					newOr->addChild(solver.get_lit_node_full(var), true);
 					newOr->addChild(solver.get_lit_node_full(-1 * var), true);
+					newOr->choiceVar = (unsigned) var;
 				}
 			}
 			// Record the new values
