@@ -723,11 +723,7 @@ void DTNode::genNNF(ostream & out)
 	}
 	else if (DT_OR == type)
 	{
-		//Dimitar Sht. Shterionov: ignoring negative values on OR nodes
-		if (choiceVar > 0)
-			out << "O " << choiceVar << " " << children.size();
-		else
-			out << "O 0 " << children.size();
+		out << "O " << choiceVar << " " << children.size();
 
 		if (2 != children.size())
 			toSTDOUT("Error: Or node with " << children.size() << " children.");
@@ -824,6 +820,7 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 					newAnd->addChild(newOr, true);
 					newOr->addChild(solver.get_lit_node_full(var), true);
 					newOr->addChild(solver.get_lit_node_full(-1 * var), true);
+					newOr->choiceVar = (unsigned) var;
 				}
 			}
 			// Record the new values

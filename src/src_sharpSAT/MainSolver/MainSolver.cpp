@@ -179,6 +179,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 					
 				// Add an arbitrary choice between the two
 				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
+				newOr->choiceVar = (unsigned) i;
 				decStack.top().getDTNode()->addChild(newOr, true);
 				newOr->addChild(new DTNode(i, true, num_Nodes++), true);
 				newOr->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
@@ -192,6 +193,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 				
 				newOr->addChild(get_lit_node_full(-1 * i), true);
 				newOr->addChild(newAnd, true);
+				newOr->choiceVar = (unsigned) i;
 				
 				newAnd->addChild(new DTNode(i, true, num_Nodes++), true);
 				newAnd->addChild(botNode, true);
@@ -205,6 +207,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 				
 				newOr->addChild(get_lit_node_full(i), true);
 				newOr->addChild(newAnd, true);
+				newOr->choiceVar = (unsigned) i;
 				
 				newAnd->addChild(new DTNode((-1 * i), true, num_Nodes++), true);
 				newAnd->addChild(botNode, true);
@@ -356,7 +359,7 @@ bool CMainSolver::decide()
 	DTNode * leftLit = get_lit_node(theLit.toSignedInt());
 	DTNode * rightLit = get_lit_node(-1 * theLit.toSignedInt());
 
-	newNode->choiceVar = theLit.toSignedInt();
+	newNode->choiceVar = theLit.toVarIdx();
 
 	// Set the parents
 	left->addParent(newNode, true);

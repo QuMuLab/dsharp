@@ -944,8 +944,8 @@ bool CInstanceGraph::createfromFile(const char* lpstrFileName)
 	//---  and add the default values for all variables
 	for (unsigned int i = 0; i <= countAllVars(); i++)
 	{
-		varTranslation[(int) i] = (int) i;
-		varUntranslation[(int) i] = (int) i;
+		varTranslation[(int) i] = i;
+		varUntranslation[(int) i] = i;
 	}
 
 	return true;

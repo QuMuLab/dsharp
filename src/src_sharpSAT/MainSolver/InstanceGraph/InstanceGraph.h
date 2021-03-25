@@ -47,9 +47,9 @@ class CInstanceGraph
 	unsigned int numBinClauses;
 	unsigned int numBinCCls;
 
-	vector<int> varTranslation;
-	vector<int> varUntranslation;
-	vector<int> origTranslation;
+	vector<unsigned> varTranslation;
+	vector<unsigned> varUntranslation;
+	vector<unsigned> origTranslation;
 
 protected:
 
@@ -172,17 +172,17 @@ public:
 	CInstanceGraph();
 	~CInstanceGraph();
 
-	const vector<int> & getVarTranslation() const
+	const vector<unsigned> & getVarTranslation() const
 	{
 		return varTranslation;
 	}
 
-	const vector<int> & getVarUnTranslation() const
+	const vector<unsigned> & getVarUnTranslation() const
 	{
 		return varUntranslation;
 	}
 
-	const vector<int> & getOrigTranslation() const
+	const vector<unsigned> & getOrigTranslation() const
 	{
 		return origTranslation;
 	}
