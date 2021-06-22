@@ -1466,7 +1466,11 @@ bool CMainSolver::prepBCP(LiteralIdT firstLit)
 	CVariableVertex *pV;
 
 	for (unsigned int i = 0; i < impls.size(); i++)
-		if (getVar(impls[i]).setVal(impls[i].polarity(), 0))
+
+		if (getVar(impls[i]).getVal() == impls[i].oppositeLit().polarityTriVal())
+			return false;
+
+		else if (getVar(impls[i]).setVal(impls[i].polarity(), 0))
 		{
 			unLit = impls[i].oppositeLit();
 			satLit = impls[i];

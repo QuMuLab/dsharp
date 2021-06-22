@@ -273,7 +273,7 @@ public:
 		stopWatch.setTimeBound(i);
 	}
 
-	void writeBDG(const char *fileName)
+	void writeBDG(const char *fileName, bool falsify=false)
 	{
 		set<int> nodesSeen;
 		set<int> litsSeen;
@@ -282,6 +282,12 @@ public:
 		ofstream out(fileName);
 
 		out << "digraph backdoorgraph {" << endl;
+
+		if (falsify) {
+			out << "  root [label=\"OR\"];" << endl;
+			out << "}" << endl;
+			return;
+		}
 
 		// First add the root
 		if (1 == decStack.top().getDTNode()->numChildren())
@@ -409,9 +415,16 @@ public:
 
 	}
 	
-	void writeNNF(const char *fileName)
+	void writeNNF(const char *fileName, bool falsify=false)
 	{
 		ofstream out(fileName);
+
+		if (falsify) {
+			out << "nnf 1 0 0" << endl;
+			out << "O 0 0" << endl;
+			return;
+		}
+
 		vector<DTNode*> *nodeList = new vector<DTNode*> ();
 
 		DTNode* root;
