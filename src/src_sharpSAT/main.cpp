@@ -247,16 +247,17 @@ int main(int argc, char *argv[])
 	if (fileout)
 		theRunAn.getData().writeToFile(dataFile);
 
+		bool falsify = false;
         if (0 == theRunAn.getData().getNumSatAssignments()) {
-            cout << "\nTheory is unsat. Skipping file output.\n" << endl;
-            return 0;
+            cout << "\nTheory is unsat. Resetting d-DNNF to empty Or.\n" << endl;
+			falsify = true;
         }
 
 	if (graphFileout)
-		theSolver.writeBDG(graphFile);
+		theSolver.writeBDG(graphFile, falsify);
 
 	if (nnfFileout)
-		theSolver.writeNNF(nnfFile);
+		theSolver.writeNNF(nnfFile, falsify);
 
 	return 0;
 }
