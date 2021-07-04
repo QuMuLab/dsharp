@@ -420,7 +420,7 @@ public:
 		ofstream out(fileName);
 
 		if (falsify) {
-			out << "nnf 1 0 0" << endl;
+			out << "nnf 1 0 " << bdg_var_count << endl;
 			out << "O 0 0" << endl;
 			return;
 		}
