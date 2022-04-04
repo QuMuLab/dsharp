@@ -2,6 +2,8 @@
 #include <math.h>
 #include<fstream>
 #include<stdio.h>
+#include<limits>
+#include<sstream>
 
 CRunAnalyzer theRunAn;
 
@@ -615,13 +617,7 @@ bool CInstanceGraph::prep_CleanUpPool()
 
 bool CInstanceGraph::createfromFile(const char* lpstrFileName)
 {
-
-	const int BUF_SZ = 65536;
-	const int TOK_SZ = 255;
-
-	char buf[BUF_SZ];
-	char token[TOK_SZ];
-	unsigned int line = 0;
+    unsigned int nLine = 0;
 	unsigned int nVars, nCls;
 	int lit;
 	vector<int> litVec;
@@ -646,73 +642,59 @@ bool CInstanceGraph::createfromFile(const char* lpstrFileName)
 	fclose(filedesc);
 
 	ifstream inFile(lpstrFileName, ios::in);
+    string line;
+    string nextWord;
 
-	// read the preamble of the cnf file
-	while (inFile.getline(buf, BUF_SZ))
-	{
-		line++;
-		if (buf[0] == 'c')
-			continue;
-		if (buf[0] == 'p')
-		{
-			if (sscanf(buf, "p cnf %d %d", &nVars, &nCls) < 2)
-			{
-				toERROUT("line "<<line<<": failed reading problem line \n");
-				exit(3);
-			}
-			break;
-		}
-		else
-		{
-			toERROUT("line"<<line<<": problem line expected "<<endl);
-		}
-	}
-	originalVarCount = nVars;
-	int i, j;
-	// now read the data
-	while (inFile.getline(buf, BUF_SZ))
-	{
-		line++;
-		i = 0;
-		j = 0;
-		if (buf[0] == 'c')
-			continue;
-		while (buf[i] != 0x0)
-		{
+    // read the preamble of the cnf file
+    while(std::getline(inFile, line))
+    {
+        nLine++;
+        if (line.compare(0, 5, "p cnf") == 0)
+        {
+            std::stringstream linestream(line);
+            linestream >> nextWord; // eat 'p'
+            linestream >> nextWord; // eat 'cnf'
+            if(!(linestream >> nVars) || !(linestream >> nCls))
+            {
+                toERROUT("line "<<nLine<<": failed reading cnf header line, expected p cnf Vars Clauses"<<endl);
+                exit(3);
+            }
+            break;
+        }
+        else if (line[0] != 'c')
+            toERROUT("line " << nLine << ": problem line, expected comment c ... or p cnf Vars Clauses" << endl);
+    }
 
-			while (buf[i] != 0x0 && buf[i] != '-' && (buf[i] < '0' || buf[i]
-					> '9'))
-				i++;
-			if (buf[i] == 0x0) continue;
-			while (buf[i] == '-' || buf[i] >= '0' && buf[i] <= '9')
-			{
-				token[j] = buf[i];
-				i++;
-				j++;
-			}
-			token[j] = 0x0;
-			lit = atoi(token);
-			j = 0;
-			if (lit == 0) // end of clause
-			{
-				if (clauseLen > 0)
-					litVec.push_back(0);
-				clauseLen = 0;
-			}
-			else
-			{
-				clauseLen++;
-				litVec.push_back(lit);
-			}
-		}
-	}
+    originalVarCount = nVars;
+    char firstChar;
+    // now read the data
+    while (inFile >> firstChar)
+    {
+        if(isdigit(firstChar) || firstChar == '-')
+        {
+            inFile.unget();
+            // parse clause (begins with (negative) digit)
+            while((inFile >> lit) && lit != 0)
+            {
+                clauseLen++;
+                litVec.push_back(lit);
+            }
+            if (clauseLen > 0)
+                litVec.push_back(0);
+            clauseLen = 0;
+            inFile.ignore(numeric_limits<streamsize>::max(), '\n'); // skip till next line
+            nLine++;
+        }
+        else if (!isspace(firstChar)) // if whitespace, we eat it instead
+        {
+            // no digit (or whitespace) so we skip the line
+            inFile.ignore(numeric_limits<streamsize>::max(),'\n');
+            nLine++;
+        }
+    }
 
-	if (!inFile.eof())
-	{
-		toERROUT(" CNF input: line too long");
-	}
-	inFile.close();
-	/// END FILE input
+    inFile.close();
+    /// END FILE input
 
 
 	vector<int>::iterator it, jt, itEndCl;
