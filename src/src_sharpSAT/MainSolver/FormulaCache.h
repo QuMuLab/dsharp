@@ -6,7 +6,6 @@
 #include<assert.h>
 #endif
 
-#include <sys/sysinfo.h>
 #include <vector>
 #include <iostream>
 
@@ -20,7 +19,23 @@
 #include "InstanceGraph/ComponentTypes.h"
 #include "DecisionStack.h"
 #include "DecisionTree.h"
-using namespace std;
+
+
+
+// Different requirements for different availableMem
+// implementations - platform depended.
+#ifdef __linux__
+#include <unistd.h>
+#include <sys/sysinfo.h>
+#elif __APPLE__ && __MACH__
+#include <unistd.h>
+#elif _WIN32
+#include <windows.h>
+#endif
+/**
+ * @return Available memory in bytes
+ */
+unsigned long availableMem();
 
 typedef unsigned int CacheEntryId;
 

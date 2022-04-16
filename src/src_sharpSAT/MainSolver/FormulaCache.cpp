@@ -1,5 +1,29 @@
-#include <unistd.h>
 #include "FormulaCache.h"
+
+unsigned long availableMem() {
+    //Implementation is platform depended
+#ifdef __linux__
+    int pgs = getpagesize();
+    long int pages = get_avphys_pages();
+    return (pages * pgs) / 2;
+#elif __APPLE__ && __MACH__
+    long pgs = sysconf(_SC_PAGE_SIZE);
+    long int pages = sysconf(_SC_AVPHYS_PAGES);
+    return page_size * pages / 2;
+#elif _WIN32
+    // relevant documentation:
+    // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    GlobalMemoryStatusEx(&statex);
+    return statex.ullAvailPhys;
+#elif SUN_OS
+    // This value was the previously used value for SUN_OS
+    return 100*1024*1024;
+#else
+    // Did not implement any availableMem() function for this OS ...
+#endif
+}
 
 unsigned int CFormulaCache::oldestEntryAllowed = (unsigned int) -1;
 
@@ -12,18 +36,8 @@ CFormulaCache::CFormulaCache()
     theEntryBase.reserve(iBuckets*10);
     scoresDivTime = 50000;
     lastDivTime = 0;
-#ifdef SUN_OS
     if (CSolverConf::maxCacheSize == 0)
-        CSolverConf::maxCacheSize = 100*1024*1024;
-#endif
-#ifndef SUN_OS
-    if (CSolverConf::maxCacheSize == 0)
-    {
-        int pgs = getpagesize();
-        long int pages = get_avphys_pages();
-        CSolverConf::maxCacheSize = (pgs*pages)/2;
-    }
-#endif
+        CSolverConf::maxCacheSize = availableMem();
 }
 
 
