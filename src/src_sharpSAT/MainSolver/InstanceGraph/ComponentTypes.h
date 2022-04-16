@@ -324,8 +324,8 @@ template <class _T, unsigned int _bitsPerBlock>
 bool CPackedCompId<_T,_bitsPerBlock>::equals(const CComponentId &rComp) const
 {
 
-    if ( (theVars.capacity() !=  (uint) rComp.countVars()*bpeVars/_bitsPerBlock +1)
-            || theClauses.capacity() != (uint) rComp.countCls()*bpeCls/_bitsPerBlock +1) return false;
+    if ( (theVars.capacity() !=  (unsigned int) rComp.countVars()*bpeVars/_bitsPerBlock +1)
+            || theClauses.capacity() != (unsigned int) rComp.countCls()*bpeCls/_bitsPerBlock +1) return false;
 
     unsigned int bitpos = 0;
     unsigned int h = 0;
