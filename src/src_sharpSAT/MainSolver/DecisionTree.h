@@ -33,7 +33,8 @@
 
 #include "../Basics.h"
 
-using namespace std;
+using std::set;
+using std::ostream;
 
 class CMainSolver;
 

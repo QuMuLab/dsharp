@@ -5,6 +5,9 @@
 #include<limits>
 #include<sstream>
 
+using std::ios;
+using std::string;
+
 CRunAnalyzer theRunAn;
 
 // class constructor
@@ -682,13 +685,13 @@ bool CInstanceGraph::createfromFile(const char* lpstrFileName)
             if (clauseLen > 0)
                 litVec.push_back(0);
             clauseLen = 0;
-            inFile.ignore(numeric_limits<streamsize>::max(), '\n'); // skip till next line
+            inFile.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // skip till next line
             nLine++;
         }
         else if (!isspace(firstChar)) // if whitespace, we eat it instead
         {
             // no digit (or whitespace) so we skip the line
-            inFile.ignore(numeric_limits<streamsize>::max(),'\n');
+            inFile.ignore(std::numeric_limits<std::streamsize>::max(),'\n');
             nLine++;
         }
     }

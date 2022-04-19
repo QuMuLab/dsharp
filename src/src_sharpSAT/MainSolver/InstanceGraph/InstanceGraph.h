@@ -8,7 +8,6 @@
 #include <assert.h>
 #endif
 
-using namespace std;
 
 #include <Interface/AnalyzerData.h>
 

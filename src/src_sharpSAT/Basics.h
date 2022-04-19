@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 
-using namespace std;
+
 
 
 #define FULL_DDNNF
@@ -43,14 +43,14 @@ public:
 #ifdef COMPILE_FOR_GUI
 #define toSTDOUT(X)
 #else
-#define toSTDOUT(X)	if(!CSolverConf::quietMode) cout << X;
+#define toSTDOUT(X)	if(!CSolverConf::quietMode) std::cout << X;
 #endif
 
 
 #ifdef COMPILE_FOR_GUI
 #define toERROUT(X)
 #else
-#define toERROUT(X)	if(!CSolverConf::quietMode) cout << X;
+#define toERROUT(X)	if(!CSolverConf::quietMode) std::cout << X;
 #endif
 
 #ifdef DEBUG

@@ -136,14 +136,14 @@ void CMainSolver::solve(const char *lpstrFileName)
 
 	// We compress the tree now that the search is finished
 	decStack.top().getDTNode()->uncheck(2);
-	cout << "Uncompressed Edges: " << decStack.top().getDTNode()->count(true) << endl;
+	std::cout << "Uncompressed Edges: " << decStack.top().getDTNode()->count(true) << endl;
 
 	decStack.top().getDTNode()->uncheck(3);
 	decStack.top().getDTNode()->compressNode();
 
 	decStack.top().getDTNode()->uncheck(4);
 	bdg_edge_count = decStack.top().getDTNode()->count(true);
-	cout << "Compressed Edges: " << bdg_edge_count << endl;
+	std::cout << "Compressed Edges: " << bdg_edge_count << endl;
 	
 	// There may have been some translation done during the file parsing
 	//  phase, so we translate the bdg literals back.

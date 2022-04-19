@@ -17,7 +17,6 @@
 
 #include "DecisionTree.h"
 
-using namespace std;
 
 /** \addtogroup Interna*/
 /*@{*/

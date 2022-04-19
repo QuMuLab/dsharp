@@ -19,6 +19,10 @@
  * sollten.
  */
 
+using std::pair;
+using std::vector;
+using std::queue;
+
 /*@{*/
 
 typedef unsigned char viewStateT;

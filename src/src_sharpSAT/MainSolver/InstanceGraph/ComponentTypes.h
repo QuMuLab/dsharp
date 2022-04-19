@@ -13,7 +13,6 @@
 
 #include "AtomsAndNodes.h"
 
-using namespace std;
 
 //
 //  the identifier of the components
