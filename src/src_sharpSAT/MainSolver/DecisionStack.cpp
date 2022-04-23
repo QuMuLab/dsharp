@@ -86,9 +86,9 @@ void CDecisionStack::init(unsigned int resSize)
     allComponentsStack.push_back(new CComponentId());
 
     // initialize the stack to contain at least level zero
-    DTNode * dummyLeft = new DTNode(DT_AND, 2);
-    DTNode * dummyRight = new DTNode(DT_AND, 1);
-    dtMain = new DTNode(DT_AND, 0);
+    DTNode * dummyLeft = new DTNode(DT_NodeType::kDTAnd, 2);
+    DTNode * dummyRight = new DTNode(DT_NodeType::kDTAnd, 1);
+    dtMain = new DTNode(DT_NodeType::kDTAnd, 0);
 
     dummyLeft->addParent(dtMain, true);
     dummyRight->addParent(dtMain, true);

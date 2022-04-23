@@ -92,34 +92,34 @@ int DTNode::getVal()
 
 bool DTNode::isBottom()
 {
-	return type == DT_BOTTOM;
+	return type == DT_NodeType::kDTBottom;
 }
 
 bool DTNode::isTop()
 {
-	return type == DT_TOP;
+	return type == DT_NodeType::kDTTop;
 }
 
 bool DTNode::isValid()
 {
-	return ((type == DT_TOP) || (type == DT_BOTTOM) || (type == DT_LIT)
-			|| (type == DT_AND) || (type == DT_OR));
+	return ((type == DT_NodeType::kDTTop) || (type == DT_NodeType::kDTBottom) || (type == DT_NodeType::kDTLit)
+            || (type == DT_NodeType::kDTAnd) || (type == DT_NodeType::kDTOr));
 }
 
 void DTNode::topIfy()
 {
-	if (DT_LIT == type)
-		toSTDOUT("Warning: Converting DT_LIT to DT_TOP!!" << endl);
+	if (DT_NodeType::kDTLit == type)
+		toSTDOUT("Warning: Converting kDTLit to kDTTop!!" << endl);
 
-	type = DT_TOP;
+	type = DT_NodeType::kDTTop;
 }
 
 void DTNode::botIfy()
 {
-	if (DT_LIT == type)
-		toSTDOUT("Warning: Converting DT_LIT to DT_BOTTOM!!" << endl);
+	if (DT_NodeType::kDTLit == type)
+		toSTDOUT("Warning: Converting kDTLit to kDTBottom!!" << endl);
 
-	type = DT_BOTTOM;
+	type = DT_NodeType::kDTBottom;
 }
 
 // Add parent
@@ -201,7 +201,7 @@ void DTNode::compressNode()
 
 	switch (type)
 	{
-	case DT_AND:
+	case DT_NodeType::kDTAnd:
 		// First we recurse
 		for (it = children.begin(); it != children.end(); it++)
 		{
@@ -222,12 +222,12 @@ void DTNode::compressNode()
 			{
 				(*it)->parentDeleted(this);
 
-				if ((0 == (*it)->numParents()) && ((*it)->getType() != DT_LIT))
+				if ((0 == (*it)->numParents()) && ((*it)->getType() != DT_NodeType::kDTLit))
 					delete *it;
 
 			}
 			children.clear();
-			type = DT_TOP;
+			type = DT_NodeType::kDTTop;
 			return;
 		}
 
@@ -252,7 +252,7 @@ void DTNode::compressNode()
 
 					// Get rid of the oldNode if this was the only parent
 					if ((0 == oldNode->numParents()) && (oldNode->getType()
-							!= DT_LIT))
+                                                         != DT_NodeType::kDTLit))
 					{
 						delete oldNode;
 					}
@@ -263,7 +263,7 @@ void DTNode::compressNode()
 		// Now we check if a False child exists (which falsifies this node)
 		for (it = children.begin(); it != children.end(); it++)
 		{
-			if (DT_BOTTOM == (*it)->getType())
+			if (DT_NodeType::kDTBottom == (*it)->getType())
 			{
 				// Remove the children
 				for (it2 = children.begin(); it2 != children.end(); it2++)
@@ -271,12 +271,12 @@ void DTNode::compressNode()
 					(*it2)->parentDeleted(this);
 
 					if ((0 == (*it2)->numParents()) && ((*it2)->getType()
-							!= DT_LIT))
+                                                        != DT_NodeType::kDTLit))
 						delete *it2;
 
 				}
 				children.clear();
-				type = DT_BOTTOM;
+				type = DT_NodeType::kDTBottom;
 				return;
 			}
 		}
@@ -290,8 +290,8 @@ void DTNode::compressNode()
 			{
 				if (0 == (*it)->numChildren())
 				{
-					if ((DT_AND == (*it)->getType()) || (DT_OR
-							== (*it)->getType()))
+					if ((DT_NodeType::kDTAnd == (*it)->getType()) || (DT_NodeType::kDTOr
+                                                                      == (*it)->getType()))
 					{
 						found = true;
 
@@ -299,7 +299,7 @@ void DTNode::compressNode()
 						childDeleted(*it);
 
 						if ((0 == (*it)->numParents()) && ((*it)->getType()
-								!= DT_LIT))
+                                                           != DT_NodeType::kDTLit))
 							delete *it;
 					}
 				}
@@ -313,7 +313,7 @@ void DTNode::compressNode()
 			found = false;
 			for (it = children.begin(); it != children.end() && !found; it++)
 			{
-				if (DT_TOP == (*it)->getType())
+				if (DT_NodeType::kDTTop == (*it)->getType())
 				{
 					found = true;
 
@@ -321,7 +321,7 @@ void DTNode::compressNode()
 					childDeleted(*it);
 
 					if ((0 == (*it)->numParents()) && ((*it)->getType()
-							!= DT_LIT))
+                                                       != DT_NodeType::kDTLit))
 						delete *it;
 				}
 			}
@@ -334,7 +334,7 @@ void DTNode::compressNode()
 			found = false;
 			for (it = children.begin(); it != children.end() && !found; it++)
 			{
-				if (DT_AND == (*it)->getType())
+				if (DT_NodeType::kDTAnd == (*it)->getType())
 				{
 
 					DTNode * oldNode = (*it);
@@ -355,7 +355,7 @@ void DTNode::compressNode()
 
 					// Remove oldNode if it no longer has a parent
 					if ((0 == oldNode->numParents()) && (oldNode->getType()
-							!= DT_LIT))
+                                                         != DT_NodeType::kDTLit))
 						delete oldNode;
 
 					// Mark as found
@@ -364,7 +364,7 @@ void DTNode::compressNode()
 			}
 		}
 		break;
-	case DT_OR:
+	case DT_NodeType::kDTOr:
 
 		// First we recurse
 		for (it = children.begin(); it != children.end(); it++)
@@ -385,11 +385,11 @@ void DTNode::compressNode()
 			for (it = children.begin(); it != children.end(); it++)
 			{
 				(*it)->parentDeleted(this);
-				if ((0 == (*it)->numParents()) && ((*it)->getType() != DT_LIT))
+				if ((0 == (*it)->numParents()) && ((*it)->getType() != DT_NodeType::kDTLit))
 					delete *it;
 			}
 			children.clear();
-			type = DT_BOTTOM;
+			type = DT_NodeType::kDTBottom;
 			return;
 		}
 
@@ -415,7 +415,7 @@ void DTNode::compressNode()
 
 					// Get rid of the oldNode if this was the only parent
 					if ((0 == oldNode->numParents()) && (oldNode->getType()
-							!= DT_LIT))
+                                                         != DT_NodeType::kDTLit))
 					{
 						delete oldNode;
 					}
@@ -426,18 +426,18 @@ void DTNode::compressNode()
 		// Now we check if a True child exists (which trivializes this node)
 		for (it = children.begin(); it != children.end(); it++)
 		{
-			if (DT_TOP == (*it)->getType())
+			if (DT_NodeType::kDTTop == (*it)->getType())
 			{
 				// Remove the children
 				for (it2 = children.begin(); it2 != children.end(); it2++)
 				{
 					(*it2)->parentDeleted(this);
 					if ((0 == (*it2)->numParents()) && ((*it2)->getType()
-							!= DT_LIT))
+                                                        != DT_NodeType::kDTLit))
 						delete *it2;
 				}
 				children.clear();
-				type = DT_TOP;
+				type = DT_NodeType::kDTTop;
 				return;
 			}
 		}
@@ -451,8 +451,8 @@ void DTNode::compressNode()
 			{
 				if (0 == (*it)->numChildren())
 				{
-					if ((DT_AND == (*it)->getType()) || (DT_OR
-							== (*it)->getType()))
+					if ((DT_NodeType::kDTAnd == (*it)->getType()) || (DT_NodeType::kDTOr
+                                                                      == (*it)->getType()))
 					{
 						found = true;
 
@@ -460,7 +460,7 @@ void DTNode::compressNode()
 						childDeleted(*it);
 
 						if ((0 == (*it)->numParents()) && ((*it)->getType()
-								!= DT_LIT))
+                                                           != DT_NodeType::kDTLit))
 							delete *it;
 					}
 				}
@@ -474,7 +474,7 @@ void DTNode::compressNode()
 			found = false;
 			for (it = children.begin(); it != children.end() && !found; it++)
 			{
-				if (DT_BOTTOM == (*it)->getType())
+				if (DT_NodeType::kDTBottom == (*it)->getType())
 				{
 					found = true;
 
@@ -482,7 +482,7 @@ void DTNode::compressNode()
 					childDeleted(*it);
 
 					if ((0 == (*it)->numParents()) && ((*it)->getType()
-							!= DT_LIT))
+                                                       != DT_NodeType::kDTLit))
 						delete *it;
 				}
 			}
@@ -495,7 +495,7 @@ void DTNode::compressNode()
 			found = false;
 			for (it = children.begin(); it != children.end() && !found; it++)
 			{
-				if (DT_OR == (*it)->getType())
+				if (DT_NodeType::kDTOr == (*it)->getType())
 				{
 					DTNode * oldNode = (*it);
 					oldNode->parentDeleted(this);
@@ -515,7 +515,7 @@ void DTNode::compressNode()
 
 					// Remove oldNode if it no longer has a parent
 					if ((0 == oldNode->numParents()) && (oldNode->getType()
-							!= DT_LIT))
+                                                         != DT_NodeType::kDTLit))
 						delete oldNode;
 
 					// Mark as found
@@ -529,7 +529,7 @@ void DTNode::compressNode()
 			set<int> litChildren;
 			found = false;
 			for (it = children.begin(); it != children.end(); it++) {
-				if (DT_LIT == (*it)->getType()) {
+				if (DT_NodeType::kDTLit == (*it)->getType()) {
 					if (litChildren.find(-1 * (*it)->getVal()) != litChildren.end())
 						found = true;
 					litChildren.insert((*it)->getVal());
@@ -541,9 +541,9 @@ void DTNode::compressNode()
 		}
 		break;
 		/* Leaf node */
-	case DT_BOTTOM:
-	case DT_TOP:
-	case DT_LIT:
+	case DT_NodeType::kDTBottom:
+	case DT_NodeType::kDTTop:
+	case DT_NodeType::kDTLit:
 	default:
 		return;
 	}
@@ -563,7 +563,7 @@ int DTNode::count(bool isRoot)
 	// First we recurse
 	for (it = children.begin(); it != children.end(); it++)
 	{
-		if (DT_LIT == (*it)->getType())
+		if (DT_NodeType::kDTLit == (*it)->getType())
 		{
 			int lit_num = (*it)->getVal();
 			if (litsSeen.find(lit_num) == litsSeen.end())
@@ -658,8 +658,8 @@ void DTNode::reset()
 // Printout
 void DTNode::print(int depth)
 {
-	toSTDOUT("(" << id << "-" << type << ":");
-	if (DT_LIT == type)
+	toSTDOUT("(" << id << "-" << (int) type << ":");
+	if (DT_NodeType::kDTLit == type)
 	{
 		toSTDOUT(val);
 	}
@@ -681,13 +681,13 @@ void DTNode::prepNNF(vector<DTNode*> * nodeList)
 	if (nnfID != -1)
 		return;
 
-	if (((DT_TOP == type) || (DT_BOTTOM == type)) && !(CSolverConf::smoothNNF))
+	if (((DT_NodeType::kDTTop == type) || (DT_NodeType::kDTBottom == type)) && !(CSolverConf::smoothNNF))
 	{
 		toSTDOUT("Error: type of DTNode is either top or bottom." << endl);
 		return;
 	}
 
-	if (DT_LIT != type)
+	if (DT_NodeType::kDTLit != type)
 	{
 		set<DTNode *>::iterator it;
 		for (it = children.begin(); it != children.end(); it++)
@@ -705,13 +705,13 @@ void DTNode::prepNNF(vector<DTNode*> * nodeList)
 // Output the nnf format
 void DTNode::genNNF(ostream & out)
 {
-	if (DT_LIT == type) 
+	if (DT_NodeType::kDTLit == type)
 		out << "L " << val << endl;
-	else if (DT_TOP == type)
+	else if (DT_NodeType::kDTTop == type)
 		out << "A 0" << endl;
-	else if (DT_BOTTOM == type)
+	else if (DT_NodeType::kDTBottom == type)
 		out << "O 0 0" << endl;
-	else if (DT_AND == type)
+	else if (DT_NodeType::kDTAnd == type)
 	{
 		out << "A " << children.size();
 
@@ -721,7 +721,7 @@ void DTNode::genNNF(ostream & out)
 
 		out << endl;
 	}
-	else if (DT_OR == type)
+	else if (DT_NodeType::kDTOr == type)
 	{
 		out << "O " << choiceVar << " " << children.size();
 
@@ -772,7 +772,7 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 	variables.clear();
 
 	// If this is a literal, we just add the variable
-	if (DT_LIT == type) {
+	if (DT_NodeType::kDTLit == type) {
 		int var = (val < 0) ? -1 * val : val;
 		variables.insert(var);
 		literals.insert(val);
@@ -788,7 +788,7 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 	}
 
 	// If this is an AND node, there's nothing to do
-	if (DT_AND == type)
+	if (DT_NodeType::kDTAnd == type)
 		return;
 
 	set<DTNode *> toAdd;
@@ -800,7 +800,7 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 		// If the counts are the same, then it is already smooth
 		if (variables.size() != (*it)->numVariables()) {
 			// Create the new AND child
-			DTNode* newAnd = new DTNode(DT_AND, num_nodes++);
+			DTNode* newAnd = new DTNode(DT_NodeType::kDTAnd, num_nodes++);
 
 			(*it)->parentDeleted(this);
 			
@@ -816,7 +816,7 @@ void DTNode::smooth(int &num_nodes, CMainSolver &solver, set<int> &literals)
 				int var = *var_it;
 				if (!((*it)->hasVariable(var)))
 				{
-					DTNode* newOr = new DTNode(DT_OR, num_nodes++);
+					DTNode* newOr = new DTNode(DT_NodeType::kDTOr, num_nodes++);
 					newAnd->addChild(newOr, true);
 					newOr->addChild(solver.get_lit_node_full(var), true);
 					newOr->addChild(solver.get_lit_node_full(-1 * var), true);

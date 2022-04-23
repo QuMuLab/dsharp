@@ -93,7 +93,7 @@ class CMainSolver: public CInstanceGraph
 		decStack.top().includeSol(rnCodedSols);
 		theRunAn.addValue(SOLUTION, decStack.getDL());
 
-		DTNode * newTop = new DTNode(DT_TOP, num_Nodes++);
+		DTNode * newTop = new DTNode(DT_NodeType::kDTTop, num_Nodes++);
 		newTop->addParent(decStack.top().getCurrentDTNode());
 
 	}
@@ -309,7 +309,7 @@ public:
 
 			int node_id = node->getID();
 
-			if (DT_LIT == node->getType())
+			if (DT_NodeType::kDTLit == node->getType())
 			{
 				node_id = get_lit_node(node->getVal())->getID();
 			}
@@ -339,19 +339,19 @@ public:
 				out << " [label=\"";
 				switch (node->getType())
 				{
-				case DT_AND:
+				case DT_NodeType::kDTAnd:
 					out << "AND";
 					break;
-				case DT_OR:
+				case DT_NodeType::kDTOr:
 					out << "OR " << node->choiceVar;
 					break;
-				case DT_BOTTOM:
+				case DT_NodeType::kDTBottom:
 					out << "F";
 					break;
-				case DT_TOP:
+				case DT_NodeType::kDTTop:
 					out << "T";
 					break;
-				case DT_LIT:
+				case DT_NodeType::kDTLit:
 					out << node->getVal();
 					break;
 				default:
@@ -389,7 +389,7 @@ public:
 				{
 					int node_id = (*it)->getID();
 
-					if (DT_LIT == (*it)->getType())
+					if (DT_NodeType::kDTLit == (*it)->getType())
 					{
 						node_id = get_lit_node((*it)->getVal())->getID();
 					}
@@ -487,7 +487,7 @@ public:
 				}
 
 				// process the node
-				if (DT_LIT == node->getType())
+				if (DT_NodeType::kDTLit == node->getType())
 				{
 					if (node->getVal() < 0)
 					{
@@ -499,7 +499,7 @@ public:
 					}
 				}
 
-				if (DT_OR == node->getType())
+				if (DT_NodeType::kDTOr == node->getType())
 				{
 					if (node->choiceVar) {
 						node->choiceVar = varTranslation[node->choiceVar];

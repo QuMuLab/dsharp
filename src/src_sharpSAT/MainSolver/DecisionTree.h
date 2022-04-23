@@ -61,7 +61,7 @@ public:
 
 	// Constructor mainly for leaf nodes
 	DTNode(int literal, bool lit_constructor, int CURRENT_ID) :
-		type(DT_LIT), val(literal), firstNode(NULL), secondNode(NULL)
+            type(DT_NodeType::kDTLit), val(literal), firstNode(NULL), secondNode(NULL)
 	{
 		id = CURRENT_ID;
 		nnfID = -1;
@@ -103,7 +103,7 @@ public:
 			if (0 == (*it)->numParents())
 			{
 				// Protect against deleting a literal
-				if (DT_LIT != (*it)->getType())
+				if (DT_NodeType::kDTLit != (*it)->getType())
 					delete (*it);
 			}
 		}
