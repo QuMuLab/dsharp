@@ -79,7 +79,7 @@ enum TriValue
 // Note: do not use full capital for enum values
 // otherwise DT_BOTTOM/DT_TOP/.. collide with windows.h macros.
 // https://google.github.io/styleguide/cppguide.html#Enumerator_Names
-enum class DT_NodeType
+enum DT_NodeType
 {
     kDTAnd,
     kDTOr,
