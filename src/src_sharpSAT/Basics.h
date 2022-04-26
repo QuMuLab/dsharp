@@ -25,7 +25,7 @@ public:
 
     static unsigned int secsTimeBound;
 
-    static unsigned int maxCacheSize;   // maximum Cache Size in bytes
+    static size_t maxCacheSize;   // maximum Cache Size in bytes
     
     static int nodeCount; // Nodes currently in use
     

@@ -1,15 +1,19 @@
 #include "FormulaCache.h"
 
-unsigned long availableMem() {
+size_t availableMem() {
     //Implementation is platform depended
 #ifdef __linux__
-    int pgs = getpagesize();
-    long int pages = get_avphys_pages();
-    return (pages * pgs) / 2;
+    auto pgs = getpagesize();
+    auto pages = get_avphys_pages();
+    return (pages * pgs);
 #elif __APPLE__ && __MACH__
-    long pgs = sysconf(_SC_PAGE_SIZE);
-    long int pages = sysconf(_SC_AVPHYS_PAGES);
-    return page_size * pages / 2;
+    int mib[2];
+    int64_t physical_memory; //TODO: size_t instead of int64_t?
+    mib[0] = CTL_HW;
+    mib[1] = HW_MEMSIZE; //TODO: != available memory
+    size_t length = sizeof(int64_t);
+    sysctl(mib, 2, &physical_memory, &length, NULL, 0);
+    return physical_memory;
 #elif _WIN32
     // relevant documentation:
     // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex
@@ -17,6 +21,10 @@ unsigned long availableMem() {
     statex.dwLength = sizeof(statex);
     GlobalMemoryStatusEx(&statex);
     return statex.ullAvailPhys;
+#elif defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE
+    auto pages = sysconf (_SC_AVPHYS_PAGES);
+    auto pgs = sysconf (_SC_PAGESIZE);
+    return pages * pgs;
 #elif SUN_OS
     // This value was the previously used value for SUN_OS
     return 100*1024*1024;
@@ -37,7 +45,7 @@ CFormulaCache::CFormulaCache()
     scoresDivTime = 50000;
     lastDivTime = 0;
     if (CSolverConf::maxCacheSize == 0)
-        CSolverConf::maxCacheSize = availableMem();
+        CSolverConf::maxCacheSize = availableMem() / 2;
 }
 
 
@@ -78,7 +86,7 @@ bool CFormulaCache::include(CComponentId &rComp, const CRealNum &val, DTNode * d
 
     //BEGIN satistics
 
-    unsigned int memU = memUsage/(10*1024*1024);
+    auto memU = memUsage/(10*1024*1024);
 
     memUsage += rEntry.memSize();
 
@@ -171,7 +179,7 @@ bool CFormulaCache::deleteEntries(CDecisionStack & rDecStack)
     vector<CCacheEntry>::iterator it,itWrite;
     CCacheBucket::iterator bt;
 
-    if (memUsage < (unsigned int) ((double) 0.85* (double)CSolverConf::maxCacheSize)) return false;
+    if (memUsage < (size_t) (0.85 * (double) CSolverConf::maxCacheSize)) return false;
 
     // first : go through the EntryBase and mark the entries to be deleted as deleted (i.e. EMPTY
     for (it = beginEntries(); it != endEntries(); it++)
@@ -196,7 +204,7 @@ bool CFormulaCache::deleteEntries(CDecisionStack & rDecStack)
     revalidateCacheLinksIn(rDecStack.getAllCompStack());
 
     // finally: truly erase the empty entries, but keep the descendants tree consistent
-    long int newSZ = 0;
+    size_t newSZ = 0;
     long int SumNumOfVars= 0;
     CacheEntryId idOld,idNew;
 
@@ -231,13 +239,13 @@ bool CFormulaCache::deleteEntries(CDecisionStack & rDecStack)
     toSTDOUT("Cache cleaned: "<<iCachedComponents<<" Components ("<< (memUsage>>10)<< " KB remain"<<endl);
 
     if (scoresDivTime == 0) scoresDivTime = 1;
-    double dbound = (double) 0.5* (double)CSolverConf::maxCacheSize;
-    if (memUsage < (unsigned int) dbound)
+    size_t dbound = CSolverConf::maxCacheSize >> 1; // = 0.5 * maxCacheSize
+    if (memUsage < dbound)
     {
         minScoreBound/= 2;
-        if (memUsage < 0.5*dbound) scoresDivTime *= 2;
+        if (memUsage < (dbound >> 1)) scoresDivTime *= 2;
     }
-    else if (memUsage > (unsigned int) dbound)
+    else if (memUsage > dbound)
     {
         minScoreBound <<= 1;
         minScoreBound++;

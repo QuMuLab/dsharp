@@ -28,14 +28,17 @@
 #include <unistd.h>
 #include <sys/sysinfo.h>
 #elif __APPLE__ && __MACH__
-#include <unistd.h>
+#include <sys/types.h>
+#include <sys/sysctl.h>
 #elif _WIN32
 #include <windows.h>
+#elif HAVE_UNISTD_H && defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE
+#include <unistd.h>
 #endif
 /**
  * @return Available memory in bytes
  */
-unsigned long availableMem();
+size_t availableMem();
 
 typedef unsigned int CacheEntryId;
 
@@ -210,7 +213,7 @@ class CFormulaCache
     unsigned int lastDivTime;
 
     /*end statistics */
-    unsigned int memUsage;
+    size_t memUsage;
     //unsigned int maxMemUsage;
 
     double avgCachedSize()
