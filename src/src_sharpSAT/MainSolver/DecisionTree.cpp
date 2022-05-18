@@ -240,9 +240,6 @@ void DTNode::compressNode()
 			{
 				if (1 == (*it)->numChildren())
 				{
-					// Mark as found
-					found = true;
-
 					DTNode * oldNode = (*it);
 
 					childDeleted(oldNode);
@@ -253,9 +250,9 @@ void DTNode::compressNode()
 					// Get rid of the oldNode if this was the only parent
 					if ((0 == oldNode->numParents()) && (oldNode->getType()
                                                          != DT_NodeType::kDTLit))
-					{
 						delete oldNode;
-					}
+                    found = true;
+                    break; // Note: required to prevent segfault (mac OS)
 				}
 			}
 		}
@@ -293,14 +290,14 @@ void DTNode::compressNode()
 					if ((DT_NodeType::kDTAnd == (*it)->getType()) || (DT_NodeType::kDTOr
                                                                       == (*it)->getType()))
 					{
-						found = true;
-
 						(*it)->parentDeleted(this);
 						childDeleted(*it);
 
 						if ((0 == (*it)->numParents()) && ((*it)->getType()
                                                            != DT_NodeType::kDTLit))
 							delete *it;
+                        found = true;
+                        break; // Note: required to prevent segfault (mac OS)
 					}
 				}
 			}
@@ -315,14 +312,14 @@ void DTNode::compressNode()
 			{
 				if (DT_NodeType::kDTTop == (*it)->getType())
 				{
-					found = true;
-
 					(*it)->parentDeleted(this);
 					childDeleted(*it);
 
 					if ((0 == (*it)->numParents()) && ((*it)->getType()
                                                        != DT_NodeType::kDTLit))
 						delete *it;
+                    found = true;
+                    break; // Note: required to prevent segfault (mac OS)
 				}
 			}
 		}
@@ -360,6 +357,7 @@ void DTNode::compressNode()
 
 					// Mark as found
 					found = true;
+                    break; // Note: required to prevent segfault (mac OS)
 				}
 			}
 		}
@@ -402,10 +400,6 @@ void DTNode::compressNode()
 			{
 				if (1 == (*it)->numChildren())
 				{
-
-					// Mark as found
-					found = true;
-
 					DTNode * oldNode = (*it);
 
 					childDeleted(oldNode);
@@ -416,9 +410,9 @@ void DTNode::compressNode()
 					// Get rid of the oldNode if this was the only parent
 					if ((0 == oldNode->numParents()) && (oldNode->getType()
                                                          != DT_NodeType::kDTLit))
-					{
-						delete oldNode;
-					}
+                        delete oldNode;
+                    found = true;
+                    break; // Note: required to prevent segfault (mac OS)
 				}
 			}
 		}
@@ -454,14 +448,14 @@ void DTNode::compressNode()
 					if ((DT_NodeType::kDTAnd == (*it)->getType()) || (DT_NodeType::kDTOr
                                                                       == (*it)->getType()))
 					{
-						found = true;
-
 						(*it)->parentDeleted(this);
 						childDeleted(*it);
 
 						if ((0 == (*it)->numParents()) && ((*it)->getType()
                                                            != DT_NodeType::kDTLit))
 							delete *it;
+                        found = true;
+                        break; // Note: required to prevent segfault (mac OS)
 					}
 				}
 			}
@@ -476,14 +470,14 @@ void DTNode::compressNode()
 			{
 				if (DT_NodeType::kDTBottom == (*it)->getType())
 				{
-					found = true;
-
 					(*it)->parentDeleted(this);
 					childDeleted(*it);
 
 					if ((0 == (*it)->numParents()) && ((*it)->getType()
                                                        != DT_NodeType::kDTLit))
 						delete *it;
+                    found = true;
+                    break; // Note: required to prevent segfault (mac OS)
 				}
 			}
 		}
@@ -520,6 +514,7 @@ void DTNode::compressNode()
 
 					// Mark as found
 					found = true;
+                    break; // Note: required to prevent segfault (mac OS)
 				}
 			}
 		}
