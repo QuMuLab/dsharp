@@ -54,7 +54,7 @@ public:
 #endif
 
 #ifdef DEBUG
-#define toDEBUGOUT(X) if(!CSolverConf::quietMode) cout << X;
+#define toDEBUGOUT(X) if(!CSolverConf::quietMode) std::cout << X;
 #else
 #define toDEBUGOUT(X)
 #endif
