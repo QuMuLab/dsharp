@@ -28,8 +28,7 @@
 #include <unistd.h>
 #include <sys/sysinfo.h>
 #elif __APPLE__ && __MACH__
-#include <sys/types.h>
-#include <sys/sysctl.h>
+#include <mach/mach_host.h>
 #elif _WIN32
 #include <windows.h>
 #elif HAVE_UNISTD_H && defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE

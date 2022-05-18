@@ -1,5 +1,8 @@
 #include "FormulaCache.h"
 
+/**
+ * Available memory in bytes.
+ */
 size_t availableMem() {
     //Implementation is platform depended
 #ifdef __linux__
@@ -7,13 +10,20 @@ size_t availableMem() {
     auto pages = get_avphys_pages();
     return (pages * pgs);
 #elif __APPLE__ && __MACH__
-    int mib[2];
-    int64_t physical_memory; //TODO: size_t instead of int64_t?
-    mib[0] = CTL_HW;
-    mib[1] = HW_MEMSIZE; //TODO: != available memory
-    size_t length = sizeof(int64_t);
-    sysctl(mib, 2, &physical_memory, &length, NULL, 0);
-    return physical_memory;
+    // Get page size (in bytes)
+    vm_size_t pgs;
+    auto pgsStatus = host_page_size(mach_host_self(), &pgs);
+    // Get free memory (in pages) from host_statistics
+    vm_statistics_data_t vmstats;
+    mach_msg_type_number_t rSize = HOST_VM_INFO_COUNT;
+    auto vmstatsStatus = host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t) &vmstats, &rSize);
+    if (pgsStatus == KERN_SUCCESS && vmstatsStatus == KERN_SUCCESS)
+    {
+        return vmstats.free_count * pgs;
+    } else {
+        std::cout << "Failed to read free memory and page size, returning 100MB instead." << std::endl;
+        return 100*1024*1024;
+    }
 #elif _WIN32
     // relevant documentation:
     // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex
@@ -26,10 +36,11 @@ size_t availableMem() {
     auto pgs = sysconf (_SC_PAGESIZE);
     return pages * pgs;
 #elif SUN_OS
-    // This value was the previously used value for SUN_OS
+    // This value was the previously used value for SUN_OS.
+    // While rewriting this code, I kept it the same...
     return 100*1024*1024;
 #else
-    // Did not implement any availableMem() function for this OS ...
+    // availableMem() is yet to be implemented for this platform...
 #endif
 }
 
