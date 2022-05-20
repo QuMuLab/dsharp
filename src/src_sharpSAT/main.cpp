@@ -225,7 +225,7 @@ int main(int argc, char *argv[])
 				toSTDOUT("wrong parameters"<<endl);
 				return -1;
 			}
-			CSolverConf::maxCacheSize = atoi(argv[i + 1]) * 1024 * 1024;
+			CSolverConf::maxCacheSize = ((size_t) atoi(argv[i + 1])) * 1024 * 1024;
 			//cout <<"maxCacheSize:" <<CSolverConf::maxCacheSize<<"bytes\n";
 		}
 		else
