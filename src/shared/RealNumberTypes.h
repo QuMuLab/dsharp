@@ -3,7 +3,6 @@
 
 
 
-using namespace std;
 
 #ifdef GMP_BIGNUM
 #include <gmpxx.h>

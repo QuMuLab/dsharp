@@ -10,7 +10,7 @@
 #include "../../Basics.h"
 #include <SomeTime.h>
 
-using namespace std;
+using std::vector;
 
 #define INVALID_DL -1
 

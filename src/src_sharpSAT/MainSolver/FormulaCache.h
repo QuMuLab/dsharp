@@ -6,7 +6,6 @@
 #include<assert.h>
 #endif
 
-#include <sys/sysinfo.h>
 #include <vector>
 #include <iostream>
 
@@ -20,7 +19,25 @@
 #include "InstanceGraph/ComponentTypes.h"
 #include "DecisionStack.h"
 #include "DecisionTree.h"
-using namespace std;
+
+
+
+// Different requirements for different availableMem
+// implementations - platform depended.
+#ifdef __linux__
+#include <unistd.h>
+#include <sys/sysinfo.h>
+#elif __APPLE__ && __MACH__
+#include <mach/mach_host.h>
+#elif _WIN32
+#include <windows.h>
+#elif HAVE_UNISTD_H && defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE
+#include <unistd.h>
+#endif
+/**
+ * @return Available memory in bytes
+ */
+size_t availableMem();
 
 typedef unsigned int CacheEntryId;
 
@@ -195,7 +212,7 @@ class CFormulaCache
     unsigned int lastDivTime;
 
     /*end statistics */
-    unsigned int memUsage;
+    size_t memUsage;
     //unsigned int maxMemUsage;
 
     double avgCachedSize()

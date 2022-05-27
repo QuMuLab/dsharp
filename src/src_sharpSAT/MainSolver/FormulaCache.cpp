@@ -1,5 +1,48 @@
-#include <unistd.h>
 #include "FormulaCache.h"
+
+/**
+ * Available memory in bytes.
+ */
+size_t availableMem() {
+    //Implementation is platform depended
+#ifdef __linux__
+    auto pgs = getpagesize();
+    auto pages = get_avphys_pages();
+    return (pages * pgs);
+#elif __APPLE__ && __MACH__
+    // Get page size (in bytes)
+    vm_size_t pgs;
+    auto pgsStatus = host_page_size(mach_host_self(), &pgs);
+    // Get free memory (in pages) from host_statistics
+    vm_statistics_data_t vmstats;
+    mach_msg_type_number_t rSize = HOST_VM_INFO_COUNT;
+    auto vmstatsStatus = host_statistics(mach_host_self(), HOST_VM_INFO, (host_info_t) &vmstats, &rSize);
+    if (pgsStatus == KERN_SUCCESS && vmstatsStatus == KERN_SUCCESS)
+    {
+        return vmstats.free_count * pgs;
+    } else {
+        std::cout << "Failed to read free memory and page size, returning 100MB instead." << std::endl;
+        return 100*1024*1024;
+    }
+#elif _WIN32
+    // relevant documentation:
+    // https://docs.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-globalmemorystatusex
+    MEMORYSTATUSEX statex;
+    statex.dwLength = sizeof(statex);
+    GlobalMemoryStatusEx(&statex);
+    return statex.ullAvailPhys;
+#elif defined _SC_AVPHYS_PAGES && defined _SC_PAGESIZE
+    auto pages = sysconf (_SC_AVPHYS_PAGES);
+    auto pgs = sysconf (_SC_PAGESIZE);
+    return pages * pgs;
+#elif SUN_OS
+    // This value was the previously used value for SUN_OS.
+    // While rewriting this code, I kept it the same...
+    return 100*1024*1024;
+#else
+    // availableMem() is yet to be implemented for this platform...
+#endif
+}
 
 unsigned int CFormulaCache::oldestEntryAllowed = (unsigned int) -1;
 
@@ -12,18 +55,8 @@ CFormulaCache::CFormulaCache()
     theEntryBase.reserve(iBuckets*10);
     scoresDivTime = 50000;
     lastDivTime = 0;
-#ifdef SUN_OS
     if (CSolverConf::maxCacheSize == 0)
-        CSolverConf::maxCacheSize = 100*1024*1024;
-#endif
-#ifndef SUN_OS
-    if (CSolverConf::maxCacheSize == 0)
-    {
-        int pgs = getpagesize();
-        long int pages = get_avphys_pages();
-        CSolverConf::maxCacheSize = (pgs*pages)/2;
-    }
-#endif
+        CSolverConf::maxCacheSize = availableMem() / 2;
 }
 
 
@@ -64,7 +97,7 @@ bool CFormulaCache::include(CComponentId &rComp, const CRealNum &val, DTNode * d
 
     //BEGIN satistics
 
-    unsigned int memU = memUsage/(10*1024*1024);
+    auto memU = memUsage/(10*1024*1024);
 
     memUsage += rEntry.memSize();
 
@@ -157,7 +190,7 @@ bool CFormulaCache::deleteEntries(CDecisionStack & rDecStack)
     vector<CCacheEntry>::iterator it,itWrite;
     CCacheBucket::iterator bt;
 
-    if (memUsage < (unsigned int) ((double) 0.85* (double)CSolverConf::maxCacheSize)) return false;
+    if (memUsage < (size_t) (0.85 * (double) CSolverConf::maxCacheSize)) return false;
 
     // first : go through the EntryBase and mark the entries to be deleted as deleted (i.e. EMPTY
     for (it = beginEntries(); it != endEntries(); it++)
@@ -182,7 +215,7 @@ bool CFormulaCache::deleteEntries(CDecisionStack & rDecStack)
     revalidateCacheLinksIn(rDecStack.getAllCompStack());
 
     // finally: truly erase the empty entries, but keep the descendants tree consistent
-    long int newSZ = 0;
+    size_t newSZ = 0;
     long int SumNumOfVars= 0;
     CacheEntryId idOld,idNew;
 
@@ -217,13 +250,13 @@ bool CFormulaCache::deleteEntries(CDecisionStack & rDecStack)
     toSTDOUT("Cache cleaned: "<<iCachedComponents<<" Components ("<< (memUsage>>10)<< " KB remain"<<endl);
 
     if (scoresDivTime == 0) scoresDivTime = 1;
-    double dbound = (double) 0.5* (double)CSolverConf::maxCacheSize;
-    if (memUsage < (unsigned int) dbound)
+    size_t dbound = CSolverConf::maxCacheSize >> 1; // = 0.5 * maxCacheSize
+    if (memUsage < dbound)
     {
         minScoreBound/= 2;
-        if (memUsage < 0.5*dbound) scoresDivTime *= 2;
+        if (memUsage < (dbound >> 1)) scoresDivTime *= 2;
     }
-    else if (memUsage > (unsigned int) dbound)
+    else if (memUsage > dbound)
     {
         minScoreBound <<= 1;
         minScoreBound++;

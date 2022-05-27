@@ -136,14 +136,14 @@ void CMainSolver::solve(const char *lpstrFileName)
 
 	// We compress the tree now that the search is finished
 	decStack.top().getDTNode()->uncheck(2);
-	cout << "Uncompressed Edges: " << decStack.top().getDTNode()->count(true) << endl;
+	std::cout << "Uncompressed Edges: " << decStack.top().getDTNode()->count(true) << endl;
 
 	decStack.top().getDTNode()->uncheck(3);
 	decStack.top().getDTNode()->compressNode();
 
 	decStack.top().getDTNode()->uncheck(4);
 	bdg_edge_count = decStack.top().getDTNode()->count(true);
-	cout << "Compressed Edges: " << bdg_edge_count << endl;
+	std::cout << "Compressed Edges: " << bdg_edge_count << endl;
 	
 	// There may have been some translation done during the file parsing
 	//  phase, so we translate the bdg literals back.
@@ -165,11 +165,11 @@ void CMainSolver::solve(const char *lpstrFileName)
 			return;
 		
 		// TODO: Fix an AND node to the top
-		if (DT_AND != decStack.top().getDTNode()->getType())
+		if (DT_NodeType::kDTAnd != decStack.top().getDTNode()->getType())
 			toSTDOUT("Error: The top node wasn't an AND node.");
 		
 		// Make sure that every literal appears some place
-		DTNode* botNode = new DTNode(DT_AND, num_Nodes++);
+		DTNode* botNode = new DTNode(DT_NodeType::kDTAnd, num_Nodes++);
 		botNode->botIfy();
 		for (int i = 1; i <= originalVarCount; ++i) {
 		
@@ -178,7 +178,7 @@ void CMainSolver::solve(const char *lpstrFileName)
 				(literals.find(-1 * i) == literals.end())) {
 					
 				// Add an arbitrary choice between the two
-				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
+				DTNode* newOr = new DTNode(DT_NodeType::kDTOr, num_Nodes++);
 				newOr->choiceVar = (unsigned) i;
 				decStack.top().getDTNode()->addChild(newOr, true);
 				newOr->addChild(new DTNode(i, true, num_Nodes++), true);
@@ -186,8 +186,8 @@ void CMainSolver::solve(const char *lpstrFileName)
 				
 			} else if ((literals.find(i) == literals.end()) && CSolverConf::ensureAllLits) {
 				
-				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
-				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
+				DTNode* newOr = new DTNode(DT_NodeType::kDTOr, num_Nodes++);
+				DTNode* newAnd = new DTNode(DT_NodeType::kDTAnd, num_Nodes++);
 				
 				get_lit_node_full(-1 * i)->sub_parents(newOr);
 				
@@ -200,8 +200,8 @@ void CMainSolver::solve(const char *lpstrFileName)
 				
 			} else if ((literals.find(-1 * i) == literals.end()) && CSolverConf::ensureAllLits) {
 				
-				DTNode* newOr = new DTNode(DT_OR, num_Nodes++);
-				DTNode* newAnd = new DTNode(DT_AND, num_Nodes++);
+				DTNode* newOr = new DTNode(DT_NodeType::kDTOr, num_Nodes++);
+				DTNode* newAnd = new DTNode(DT_NodeType::kDTAnd, num_Nodes++);
 				
 				get_lit_node_full(i)->sub_parents(newOr);
 				
@@ -353,9 +353,9 @@ bool CMainSolver::decide()
 	/////////////////////////////
 
 	// Create the nodes
-	DTNode * newNode = new DTNode(DT_OR, num_Nodes++);
-	DTNode * left = new DTNode(DT_AND, num_Nodes++);
-	DTNode * right = new DTNode(DT_AND, num_Nodes++);
+	DTNode * newNode = new DTNode(DT_NodeType::kDTOr, num_Nodes++);
+	DTNode * left = new DTNode(DT_NodeType::kDTAnd, num_Nodes++);
+	DTNode * right = new DTNode(DT_NodeType::kDTAnd, num_Nodes++);
 	DTNode * leftLit = get_lit_node(theLit.toSignedInt());
 	DTNode * rightLit = get_lit_node(-1 * theLit.toSignedInt());
 
@@ -514,7 +514,7 @@ retStateT CMainSolver::resolveConflict()
 	int backtrackDecLev;
 
 	// Since we have a conflict, we should add a bottom to the current DTNode
-	DTNode * newBot = new DTNode(DT_BOTTOM, num_Nodes++);
+	DTNode * newBot = new DTNode(DT_NodeType::kDTBottom, num_Nodes++);
 	newBot->addParent(decStack.top().getCurrentDTNode(), true);
 
 	for (vector<LiteralIdT>::iterator it = theUnitClauses.begin(); it
@@ -552,7 +552,7 @@ retStateT CMainSolver::resolveConflict()
 				removeAllCachePollutions();
 				decStack.pop();
 
-				newBot = new DTNode(DT_BOTTOM, num_Nodes++);
+				newBot = new DTNode(DT_NodeType::kDTBottom, num_Nodes++);
 				newBot->addParent(decStack.top().getCurrentDTNode(), true);
 
 			}

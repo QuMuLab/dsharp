@@ -5,7 +5,7 @@
 #include <cstdlib>
 #include <iostream>
 
-using namespace std;
+
 
 
 #define FULL_DDNNF
@@ -25,7 +25,7 @@ public:
 
     static unsigned int secsTimeBound;
 
-    static unsigned int maxCacheSize;   // maximum Cache Size in bytes
+    static size_t maxCacheSize;   // maximum Cache Size in bytes
     
     static int nodeCount; // Nodes currently in use
     
@@ -43,18 +43,18 @@ public:
 #ifdef COMPILE_FOR_GUI
 #define toSTDOUT(X)
 #else
-#define toSTDOUT(X)	if(!CSolverConf::quietMode) cout << X;
+#define toSTDOUT(X)	if(!CSolverConf::quietMode) std::cout << X;
 #endif
 
 
 #ifdef COMPILE_FOR_GUI
 #define toERROUT(X)
 #else
-#define toERROUT(X)	if(!CSolverConf::quietMode) cout << X;
+#define toERROUT(X)	if(!CSolverConf::quietMode) std::cout << X;
 #endif
 
 #ifdef DEBUG
-#define toDEBUGOUT(X) if(!CSolverConf::quietMode) cout << X;
+#define toDEBUGOUT(X) if(!CSolverConf::quietMode) std::cout << X;
 #else
 #define toDEBUGOUT(X)
 #endif
@@ -76,13 +76,16 @@ enum TriValue
     X = 2
 };
 
+// Note: do not use full capital for enum values
+// otherwise DT_BOTTOM/DT_TOP/.. collide with windows.h macros.
+// https://google.github.io/styleguide/cppguide.html#Enumerator_Names
 enum DT_NodeType
 {
-    DT_AND,
-    DT_OR,
-    DT_LIT,
-    DT_TOP,
-    DT_BOTTOM
+    kDTAnd,
+    kDTOr,
+    kDTLit,
+    kDTTop,
+    kDTBottom
 };
 
 

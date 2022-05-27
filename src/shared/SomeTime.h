@@ -4,7 +4,6 @@
 #include<cstdlib>
 #include <sys/time.h> // To seed random generator
 
-using namespace std;
 
 extern bool diffTimes(timeval& ret, const timeval &tLater, const timeval &tEarlier);
 

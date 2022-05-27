@@ -16,7 +16,10 @@
 #include <string.h>
 
 
-using namespace std;
+using std::vector;
+using std::ifstream;
+using std::ofstream;
+using std::endl;
 
 enum DATA_IDX
 {

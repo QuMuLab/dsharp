@@ -19,7 +19,7 @@ bool CSolverConf::disableDynamicDecomp = false;
 
 unsigned int CSolverConf::secsTimeBound = 100000;
 
-unsigned int CSolverConf::maxCacheSize = 0;
+size_t CSolverConf::maxCacheSize = 0;
 
 int CSolverConf::nodeCount = 0;
 
