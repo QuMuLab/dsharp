@@ -11,7 +11,9 @@ you must have the GMP library (libgmp-dev) installed. To use the version with GM
 copy the Makefile_gmp to Makefile. Otherwise, copy Makefile_nogmp to Makefile and
 proceed normally.
 
-To compile this version of DSHARP simply run `make`
+To compile this version of DSHARP simply run `make`. 
+
+To compile `DSHARP` statically, run `make static`
 
 ## Citing
 ```

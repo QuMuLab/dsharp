@@ -96,6 +96,9 @@ first: all
 
 all: Makefile $(TARGET)
 
+static:
+	make all CXXFLAGS="-pipe -O3 -w -static" LFLAGS="-static"
+
 $(TARGET):  $(OBJECTS) 
 	$(LINK) $(LFLAGS) -o $(TARGET) $(OBJECTS) $(LIBS)
 
