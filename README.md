@@ -12,6 +12,7 @@ copy the Makefile_gmp to Makefile. Otherwise, copy Makefile_nogmp to Makefile an
 proceed normally.
 
 To compile this version of DSHARP simply run `make`
+To compile `DSHARP` statically, run `make static`
 
 ## Citing
 ```
