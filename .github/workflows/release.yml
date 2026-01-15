@@ -25,6 +25,7 @@ jobs:
       - name: Smoke test
         run: |
           ./dsharp exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          cat /tmp/dsharp.out
           test -s /tmp/dsharp.out
       - name: Package
         run: |
@@ -63,6 +64,7 @@ jobs:
         shell: msys2 {0}
         run: |
           ./dsharp.exe exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          cat /tmp/dsharp.out
           test -s /tmp/dsharp.out
       - name: Package
         shell: msys2 {0}
@@ -121,6 +123,7 @@ jobs:
       - name: Smoke test
         run: |
           ${ARCH_PREFIX} ./dsharp exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          cat /tmp/dsharp.out
           test -s /tmp/dsharp.out
       - name: Package
         run: |
