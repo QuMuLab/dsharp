@@ -1,0 +1,146 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [nogmp, gmp]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ make libgmp-dev
+      - name: Build
+        run: |
+          cp Makefile_${{ matrix.variant }} Makefile
+          make clean
+          make all
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp dsharp dist/dsharp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-linux-x86_64-${{ matrix.variant }}
+          path: dist/dsharp
+
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [nogmp, gmp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            make
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-gmp
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          cp Makefile_${{ matrix.variant }} Makefile
+          make clean
+          make all
+      - name: Package
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
+          cp dsharp dist/dsharp.exe
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-windows-x86_64-${{ matrix.variant }}
+          path: dist/dsharp.exe
+
+  build-macos:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            arch: x86_64
+          - os: macos-14
+            arch: arm64
+        variant: [nogmp, gmp]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          if [ "${{ matrix.variant }}" = "gmp" ]; then
+            brew install gmp
+          fi
+      - name: Build
+        run: |
+          cp Makefile_${{ matrix.variant }} Makefile
+          make clean
+          if [ "${{ matrix.variant }}" = "gmp" ]; then
+            GMP_PREFIX="$(brew --prefix gmp)"
+            make all CXX=clang++ \
+              CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }} -I${GMP_PREFIX}/include" \
+              LFLAGS="-arch ${{ matrix.arch }} -Wl,-rpath,${GMP_PREFIX}/lib" \
+              LIBS="-L${GMP_PREFIX}/lib -lgmpxx -lgmp"
+          else
+            make all CXX=clang++ \
+              CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }}" \
+              LFLAGS="-arch ${{ matrix.arch }}"
+          fi
+      - name: Package
+        run: |
+          mkdir -p dist
+          cp dsharp dist/dsharp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-macos-${{ matrix.arch }}-${{ matrix.variant }}
+          path: dist/dsharp
+
+  universal-macos:
+    needs: build-macos
+    runs-on: macos-14
+    strategy:
+      fail-fast: false
+      matrix:
+        variant: [nogmp, gmp]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dsharp-macos-x86_64-${{ matrix.variant }}
+          path: x86_64
+      - uses: actions/download-artifact@v4
+        with:
+          name: dsharp-macos-arm64-${{ matrix.variant }}
+          path: arm64
+      - name: Lipo
+        run: |
+          lipo -create -output dsharp x86_64/dsharp arm64/dsharp
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-macos-universal-${{ matrix.variant }}
+          path: dsharp
+
+  release:
+    needs:
+      - build-linux
+      - build-windows
+      - universal-macos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
