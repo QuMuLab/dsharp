@@ -68,32 +68,42 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-13
-            arch: x86_64
-          - os: macos-14
-            arch: arm64
+        os: [macos-14]
+        arch: [x86_64, arm64]
         variant: [nogmp, gmp]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+      - name: Setup arch
+        run: |
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license || true
+            if [ ! -x /usr/local/bin/brew ]; then
+              arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            fi
+            echo "ARCH_PREFIX=arch -x86_64" >> "$GITHUB_ENV"
+            echo "BREW_CMD=arch -x86_64 /usr/local/bin/brew" >> "$GITHUB_ENV"
+          else
+            echo "ARCH_PREFIX=" >> "$GITHUB_ENV"
+            echo "BREW_CMD=brew" >> "$GITHUB_ENV"
+          fi
       - name: Install deps
         run: |
           if [ "${{ matrix.variant }}" = "gmp" ]; then
-            brew install gmp
+            ${BREW_CMD} install gmp
           fi
       - name: Build
         run: |
           cp Makefile_${{ matrix.variant }} Makefile
-          make clean
+          ${ARCH_PREFIX} make clean
           if [ "${{ matrix.variant }}" = "gmp" ]; then
-            GMP_PREFIX="$(brew --prefix gmp)"
-            make all CXX=clang++ \
+            GMP_PREFIX="$(${BREW_CMD} --prefix gmp)"
+            ${ARCH_PREFIX} make all CXX=clang++ \
               CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }} -I${GMP_PREFIX}/include" \
               LFLAGS="-arch ${{ matrix.arch }} -Wl,-rpath,${GMP_PREFIX}/lib" \
               LIBS="-L${GMP_PREFIX}/lib -lgmpxx -lgmp"
           else
-            make all CXX=clang++ \
+            ${ARCH_PREFIX} make all CXX=clang++ \
               CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }}" \
               LFLAGS="-arch ${{ matrix.arch }}"
           fi
