@@ -22,6 +22,10 @@ jobs:
           cp Makefile_${{ matrix.variant }} Makefile
           make clean
           make all
+      - name: Smoke test
+        run: |
+          ./dsharp exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          test -s /tmp/dsharp.out
       - name: Package
         run: |
           mkdir -p dist
@@ -55,6 +59,11 @@ jobs:
           cp Makefile_${{ matrix.variant }} Makefile
           make clean
           make all
+      - name: Smoke test
+        shell: msys2 {0}
+        run: |
+          ./dsharp.exe exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          test -s /tmp/dsharp.out
       - name: Package
         shell: msys2 {0}
         run: |
@@ -109,6 +118,10 @@ jobs:
               CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }}" \
               LFLAGS="-arch ${{ matrix.arch }}"
           fi
+      - name: Smoke test
+        run: |
+          ${ARCH_PREFIX} ./dsharp exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          test -s /tmp/dsharp.out
       - name: Package
         run: |
           mkdir -p dist
