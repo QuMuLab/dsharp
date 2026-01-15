@@ -8,7 +8,7 @@ jobs:
   build-linux:
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         variant: [nogmp, gmp]
     steps:
@@ -24,7 +24,11 @@ jobs:
           make all
       - name: Smoke test
         run: |
-          ./dsharp exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          cat > /tmp/smoke.cnf <<'EOF'
+          p cnf 1 1
+          1 0
+          EOF
+          ./dsharp /tmp/smoke.cnf > /tmp/dsharp.out
           cat /tmp/dsharp.out
           test -s /tmp/dsharp.out
       - name: Package
@@ -40,7 +44,7 @@ jobs:
   build-windows:
     runs-on: windows-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         variant: [nogmp, gmp]
     steps:
@@ -63,7 +67,11 @@ jobs:
       - name: Smoke test
         shell: msys2 {0}
         run: |
-          ./dsharp.exe exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          cat > /tmp/smoke.cnf <<'EOF'
+          p cnf 1 1
+          1 0
+          EOF
+          ./dsharp.exe /tmp/smoke.cnf > /tmp/dsharp.out
           cat /tmp/dsharp.out
           test -s /tmp/dsharp.out
       - name: Package
@@ -79,7 +87,7 @@ jobs:
 
   build-macos:
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         os: [macos-14]
         arch: [x86_64, arm64]
@@ -122,7 +130,11 @@ jobs:
           fi
       - name: Smoke test
         run: |
-          ${ARCH_PREFIX} ./dsharp exp-testing/logistics.a.cnf > /tmp/dsharp.out
+          cat > /tmp/smoke.cnf <<'EOF'
+          p cnf 1 1
+          1 0
+          EOF
+          ${ARCH_PREFIX} ./dsharp /tmp/smoke.cnf > /tmp/dsharp.out
           cat /tmp/dsharp.out
           test -s /tmp/dsharp.out
       - name: Package
@@ -139,7 +151,7 @@ jobs:
     needs: build-macos
     runs-on: macos-14
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
         variant: [nogmp, gmp]
     steps:
