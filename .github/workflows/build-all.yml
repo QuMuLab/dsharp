@@ -85,9 +85,17 @@ jobs:
         run: |
           cp Makefile_${{ matrix.variant }} Makefile
           make clean
-          make all CXX=clang++ \
-            CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }}" \
-            LFLAGS="-arch ${{ matrix.arch }}"
+          if [ "${{ matrix.variant }}" = "gmp" ]; then
+            GMP_PREFIX="$(brew --prefix gmp)"
+            make all CXX=clang++ \
+              CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }} -I${GMP_PREFIX}/include" \
+              LFLAGS="-arch ${{ matrix.arch }} -Wl,-rpath,${GMP_PREFIX}/lib" \
+              LIBS="-L${GMP_PREFIX}/lib -lgmpxx -lgmp"
+          else
+            make all CXX=clang++ \
+              CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }}" \
+              LFLAGS="-arch ${{ matrix.arch }}"
+          fi
       - name: Package
         run: |
           mkdir -p dist
