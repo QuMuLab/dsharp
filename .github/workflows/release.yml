@@ -25,11 +25,12 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          cp dsharp dist/dsharp
+          OUT="dsharp-${{ github.ref_name }}-linux-x86_64-${{ matrix.variant }}"
+          cp dsharp "dist/${OUT}"
       - uses: actions/upload-artifact@v4
         with:
-          name: dsharp-linux-x86_64-${{ matrix.variant }}
-          path: dist/dsharp
+          name: dsharp-${{ github.ref_name }}-linux-x86_64-${{ matrix.variant }}
+          path: dist/dsharp-${{ github.ref_name }}-linux-x86_64-${{ matrix.variant }}
 
   build-windows:
     runs-on: windows-latest
@@ -58,11 +59,12 @@ jobs:
         shell: msys2 {0}
         run: |
           mkdir -p dist
-          cp dsharp dist/dsharp.exe
+          OUT="dsharp-${{ github.ref_name }}-windows-x86_64-${{ matrix.variant }}.exe"
+          cp dsharp "dist/${OUT}"
       - uses: actions/upload-artifact@v4
         with:
-          name: dsharp-windows-x86_64-${{ matrix.variant }}
-          path: dist/dsharp.exe
+          name: dsharp-${{ github.ref_name }}-windows-x86_64-${{ matrix.variant }}
+          path: dist/dsharp-${{ github.ref_name }}-windows-x86_64-${{ matrix.variant }}.exe
 
   build-macos:
     strategy:
@@ -110,11 +112,12 @@ jobs:
       - name: Package
         run: |
           mkdir -p dist
-          cp dsharp dist/dsharp
+          OUT="dsharp-${{ github.ref_name }}-macos-${{ matrix.arch }}-${{ matrix.variant }}"
+          cp dsharp "dist/${OUT}"
       - uses: actions/upload-artifact@v4
         with:
-          name: dsharp-macos-${{ matrix.arch }}-${{ matrix.variant }}
-          path: dist/dsharp
+          name: dsharp-${{ github.ref_name }}-macos-${{ matrix.arch }}-${{ matrix.variant }}
+          path: dist/dsharp-${{ github.ref_name }}-macos-${{ matrix.arch }}-${{ matrix.variant }}
 
   universal-macos:
     needs: build-macos
@@ -126,19 +129,20 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: dsharp-macos-x86_64-${{ matrix.variant }}
+          name: dsharp-${{ github.ref_name }}-macos-x86_64-${{ matrix.variant }}
           path: x86_64
       - uses: actions/download-artifact@v4
         with:
-          name: dsharp-macos-arm64-${{ matrix.variant }}
+          name: dsharp-${{ github.ref_name }}-macos-arm64-${{ matrix.variant }}
           path: arm64
       - name: Lipo
         run: |
-          lipo -create -output dsharp x86_64/dsharp arm64/dsharp
+          OUT="dsharp-${{ github.ref_name }}-macos-universal-${{ matrix.variant }}"
+          lipo -create -output "${OUT}" x86_64/* arm64/*
       - uses: actions/upload-artifact@v4
         with:
-          name: dsharp-macos-universal-${{ matrix.variant }}
-          path: dsharp
+          name: dsharp-${{ github.ref_name }}-macos-universal-${{ matrix.variant }}
+          path: dsharp-${{ github.ref_name }}-macos-universal-${{ matrix.variant }}
 
   release:
     needs:
