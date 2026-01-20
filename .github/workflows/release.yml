@@ -1,0 +1,188 @@
+name: release
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  build-linux:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        variant: [nogmp, gmp]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install deps
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ make libgmp-dev
+      - name: Build
+        run: |
+          cp Makefile_${{ matrix.variant }} Makefile
+          make clean
+          make all
+      - name: Smoke test
+        run: |
+          cat > /tmp/smoke.cnf <<'EOF'
+          p cnf 1 1
+          1 0
+          EOF
+          ./dsharp /tmp/smoke.cnf > /tmp/dsharp.out
+          cat /tmp/dsharp.out
+          test -s /tmp/dsharp.out
+      - name: Package
+        run: |
+          mkdir -p dist
+          OUT="dsharp-${{ github.ref_name }}-linux-x86_64-${{ matrix.variant }}"
+          cp dsharp "dist/${OUT}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-${{ github.ref_name }}-linux-x86_64-${{ matrix.variant }}
+          path: dist/dsharp-${{ github.ref_name }}-linux-x86_64-${{ matrix.variant }}
+
+  build-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        variant: [nogmp, gmp]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: >-
+            base-devel
+            make
+            mingw-w64-x86_64-toolchain
+            mingw-w64-x86_64-gmp
+      - name: Build
+        shell: msys2 {0}
+        run: |
+          cp Makefile_${{ matrix.variant }} Makefile
+          make clean
+          make all
+      - name: Smoke test
+        shell: msys2 {0}
+        run: |
+          cat > /tmp/smoke.cnf <<'EOF'
+          p cnf 1 1
+          1 0
+          EOF
+          ./dsharp.exe /tmp/smoke.cnf > /tmp/dsharp.out
+          cat /tmp/dsharp.out
+          test -s /tmp/dsharp.out
+      - name: Package
+        shell: msys2 {0}
+        run: |
+          mkdir -p dist
+          OUT="dsharp-${{ github.ref_name }}-windows-x86_64-${{ matrix.variant }}.exe"
+          cp dsharp "dist/${OUT}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-${{ github.ref_name }}-windows-x86_64-${{ matrix.variant }}
+          path: dist/dsharp-${{ github.ref_name }}-windows-x86_64-${{ matrix.variant }}.exe
+
+  build-macos:
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [macos-14]
+        arch: [x86_64, arm64]
+        variant: [nogmp, gmp]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup arch
+        run: |
+          if [ "${{ matrix.arch }}" = "x86_64" ]; then
+            sudo /usr/sbin/softwareupdate --install-rosetta --agree-to-license || true
+            if [ ! -x /usr/local/bin/brew ]; then
+              arch -x86_64 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+            fi
+            echo "ARCH_PREFIX=arch -x86_64" >> "$GITHUB_ENV"
+            echo "BREW_CMD=arch -x86_64 /usr/local/bin/brew" >> "$GITHUB_ENV"
+          else
+            echo "ARCH_PREFIX=" >> "$GITHUB_ENV"
+            echo "BREW_CMD=brew" >> "$GITHUB_ENV"
+          fi
+      - name: Install deps
+        run: |
+          if [ "${{ matrix.variant }}" = "gmp" ]; then
+            ${BREW_CMD} install gmp
+          fi
+      - name: Build
+        run: |
+          cp Makefile_${{ matrix.variant }} Makefile
+          ${ARCH_PREFIX} make clean
+          if [ "${{ matrix.variant }}" = "gmp" ]; then
+            GMP_PREFIX="$(${BREW_CMD} --prefix gmp)"
+            ${ARCH_PREFIX} make all CXX=clang++ \
+              CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }} -I${GMP_PREFIX}/include" \
+              LFLAGS="-arch ${{ matrix.arch }} -Wl,-rpath,${GMP_PREFIX}/lib" \
+              LIBS="-L${GMP_PREFIX}/lib -lgmpxx -lgmp"
+          else
+            ${ARCH_PREFIX} make all CXX=clang++ \
+              CXXFLAGS="-pipe -O3 -w -arch ${{ matrix.arch }}" \
+              LFLAGS="-arch ${{ matrix.arch }}"
+          fi
+      - name: Smoke test
+        run: |
+          cat > /tmp/smoke.cnf <<'EOF'
+          p cnf 1 1
+          1 0
+          EOF
+          ${ARCH_PREFIX} ./dsharp /tmp/smoke.cnf > /tmp/dsharp.out
+          cat /tmp/dsharp.out
+          test -s /tmp/dsharp.out
+      - name: Package
+        run: |
+          mkdir -p dist
+          OUT="dsharp-${{ github.ref_name }}-macos-${{ matrix.arch }}-${{ matrix.variant }}"
+          cp dsharp "dist/${OUT}"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-${{ github.ref_name }}-macos-${{ matrix.arch }}-${{ matrix.variant }}
+          path: dist/dsharp-${{ github.ref_name }}-macos-${{ matrix.arch }}-${{ matrix.variant }}
+
+  universal-macos:
+    needs: build-macos
+    runs-on: macos-14
+    strategy:
+      fail-fast: true
+      matrix:
+        variant: [nogmp, gmp]
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dsharp-${{ github.ref_name }}-macos-x86_64-${{ matrix.variant }}
+          path: x86_64
+      - uses: actions/download-artifact@v4
+        with:
+          name: dsharp-${{ github.ref_name }}-macos-arm64-${{ matrix.variant }}
+          path: arm64
+      - name: Lipo
+        run: |
+          OUT="dsharp-${{ github.ref_name }}-macos-universal-${{ matrix.variant }}"
+          lipo -create -output "${OUT}" x86_64/* arm64/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dsharp-${{ github.ref_name }}-macos-universal-${{ matrix.variant }}
+          path: dsharp-${{ github.ref_name }}-macos-universal-${{ matrix.variant }}
+
+  release:
+    needs:
+      - build-linux
+      - build-windows
+      - universal-macos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**
